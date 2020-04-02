@@ -1,5 +1,8 @@
 package com.lody.virtual.client;
 
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Process;
@@ -128,7 +131,12 @@ public class NativeEngine {
 
     public static void enableIORedirect() {
         try {
-            String soPath = String.format("/data/data/%s/lib/libva++.so", VirtualCore.get().getHostPkg());
+            final Context context = VirtualCore.get().getContext();
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(VirtualCore.get().getHostPkg(), 0);
+            final String nativeLibDir = packageInfo.applicationInfo.nativeLibraryDir;
+            // String soPath = String.format("/data/data/%s/lib/libva++.so", VirtualCore.get().getHostPkg());
+            String soPath = String.format("%s/libva++.so", nativeLibDir);
+            VLog.d(TAG, "enableIORedirect soPath " + soPath);
             if (!new File(soPath).exists()) {
                 throw new RuntimeException("Unable to find the so.");
             }

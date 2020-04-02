@@ -40,6 +40,7 @@ enum {
     SDK_VERSION_O,                       /* 26, Android 8.0 */
     SDK_VERSION_O_MR1,                   /* 27, Android 8.1 */
     SDK_VERSION_P,                       /* 28, Android 9.0 */
+    SDK_VERSION_Q,                       /* 29, Android 10.0 */
 };
 
 #endif //NDK_CORE_H

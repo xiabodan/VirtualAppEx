@@ -923,6 +923,222 @@ static void SubstrateHookFunction(SubstrateProcessRef process, void *symbol, voi
 }
 #endif
 
+#ifdef __aarch64__
+static void SubstrateHookFunction(SubstrateProcessRef process, void *symbol, void *replace, void **result) {
+    if (symbol == NULL)
+        return;
+
+    uint32_t *area(reinterpret_cast<uint32_t *>(symbol));
+    uint32_t *arm(area);
+
+    const size_t used(16);
+
+    uint32_t backup[used / sizeof(uint32_t)] = {arm[0], arm[1], arm[2], arm[3]};
+
+    if (MSDebug) {
+        char name[16];
+        sprintf(name, "%p", area);
+        MSLogHexEx(area, used + sizeof(uint32_t), 4, name);
+    }
+
+    if (result != NULL) {
+
+        /*
+         * 0x58000050:
+         * 0101 1000 0000 0000 0000 0000 0101 0000  -  ldr x16, [pc + 8]
+         * 0x01 1000 iiii iiii iiii iiii iiit tttt  -  ldr Rt ADDR_PCREL19
+         * 0xD61F0200:
+         * 1101 0110 0001 1111 0000 0010 0000 0000  -  br x16
+         * x10x 0110 000x xxxx xxxx xxnn nnnx xxxx  -  br Rn
+         */
+
+        /*
+         * ldr x16, [pc + 8]
+         * br x16
+         */
+        if (backup[0] == 0x58000050 && backup[1] == 0xD61F0200 && result) {
+#if 0
+            /* 支持重复hook */
+            SubstrateHookMemory code(process, arm + 2, sizeof(uint64_t));
+            *(uint64_t *)(arm + 2) = (uint64_t)(replace);
+#endif
+            *result = reinterpret_cast<void *>(*(uint64_t*)&backup[2]);
+             return;
+        }
+
+        size_t length(used);
+        for (unsigned offset(0); offset != used / sizeof(uint32_t); ++offset) {
+            uint32_t inst = backup[offset];
+            if (inst == 0x14000001) { //b pc, #4
+                length -= 4;
+            }
+            else if ((inst & 0x1F000000) == 0x10000000)  { //adr[p] Xn, pcrel -> ldr Xn, value
+                length += 8;
+            }
+#if 0
+            else if ((inst & 0xbf000000) == 0x18000000) {  //ldr Xn, [pcrel] -> ldr Xn, value
+                length += 8;
+            }
+#endif
+            else if ((inst & 0x7C000000) == 0x14000000) { //b
+                length += 12;
+            }
+            else if (((inst & 0xFF000010) == 0x54000000) || ((inst & 0x7E000000) == 0x34000000)) { //b.c || cbz
+                length += 16;
+            }
+        }
+
+        length += 4 * sizeof(uint32_t);
+
+        uint32_t *buffer(reinterpret_cast<uint32_t *>(mmap(
+                        NULL, length, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0
+                        )));
+
+        if (buffer == MAP_FAILED) {
+            MSLog(MSLogLevelError, "MS:Error:mmap() = %d", errno);
+            *result = NULL;
+            return;
+        }
+
+        if (false) fail: {
+            munmap(buffer, length);
+            *result = NULL;
+            return;
+        }
+
+        size_t start(0), end(length / sizeof(uint32_t));
+        uint32_t *trailer(reinterpret_cast<uint32_t *>(buffer + end));
+        for (unsigned offset(0); offset != used / sizeof(uint32_t); ++offset) {
+            uint32_t inst = backup[offset];
+            int64_t value,imm64;
+
+            if (inst == 0x14000001) { //b pc, #4
+                continue;
+            }
+            else if ((inst & 0x1F000000) == 0x10000000)  { //adr[p] Xn, pcrel -> ldr Xn, value
+                /*
+                 * 1iix 0000 iiii iiii iiii iiii iiid dddd  -  adrp Rd ADDR_ADRP
+                 * 0iix 0000 iiii iiii iiii iiii iiid dddd  -  adr Rd ADDR_PCREL21
+                 *
+                 * 提取其中 21 位有符号类型地址(前后跳转).
+                 */
+                int shift;
+                long base;
+                if (inst & 0x80000000) {            // adrp
+                    shift = 31;
+                } else {                            // adr
+                    shift = 43;
+                }
+
+                imm64 = (int64_t)((uint64_t)((inst >> 3) & 0x1FFFFC | (inst >> 29) & 3) << 43) >> shift;
+
+                base = (long) &area[offset];
+                if (inst & 0x80000000) {  /* adrp */
+                    base &= 0xFFFFFFFFFFFFF000;
+                }
+
+                *(uint64_t *)(trailer - 2) = (uint64_t) (base + imm64);
+                end -= 2;
+                trailer -= 2;
+
+                buffer[start] = 0x58000000 | (inst & 0x1f) | ((end  -  start) * 32);
+                start ++;
+            }
+            else if ((inst & 0x7C000000) == 0x14000000) { //b
+                /*
+                 * 000x 01ii iiii iiii iiii iiii iiii iiii  -  b ADDR_PCREL26
+                 */
+                imm64 = ((int64_t)((uint64_t) inst << 0x26) >> 0x24);
+
+                *(uint64_t *)(trailer - 2) = (uint64_t) ((long)&area[offset] + imm64);
+                end -= 2;
+                trailer -= 2;
+
+                buffer[start] = (32 * (end - start))| 0x58000010;
+                buffer[start + 1] = (inst >> 10) & 0x200000 | 0xD61F0200;
+                start += 2;
+            }
+            else if (((inst & 0xFF000010) == 0x54000000) || ((inst & 0x7E000000) == 0x34000000)) { //b.c || cb[n]z
+                /* 0x54000000:
+                 * 0101 0100 0000 0000 0000 0000 0000 0000
+                 * 010x 0100 iiii iiii iiii iiii iiix xxxx  -  b.c ADDR_PCREL19
+                 * 0x34000000:
+                 * 0011 0100 0000 0000 0000 0000 0000 0000
+                 * xx1x 0100 iiii iiii iiii iiii iiit tttt  -  cbz Rt ADDR_PCREL19
+                 * xx1x 0101 iiii iiii iiii iiii iiit tttt  -  cbnz Rt ADDR_PCREL19
+                 */
+                imm64 = ((int64_t)((uint64_t)((inst >> 3) & 0x1FFFFC) << 43) >> 43);
+
+                *(uint32_t *)(trailer - 4) = 0x58000050;
+                *(uint32_t *)(trailer - 3) = 0xD61F0200;
+                *(uint64_t *)(trailer - 2) = (uint64_t)((long)&area[offset] + imm64);
+                end -= 4;
+                trailer -= 4;
+
+                buffer[start] = 32 * (end - start) & 0xFFFFE0 | inst & 0xFF00001F;
+                start ++;
+            }
+#if 0
+            /* 编译器不会生成该类型指令 */
+            else if ((inst & 0xbf000000) == 0x18000000) {  //ldr Xn, [pcrel] -> ldr Xn, value
+                /*
+                 * 0x18000000:
+                 * 0001 1000 0000 0000 0000 0000 0000 0000
+                 * 0x01 1000 iiii iiii iiii iiii iiit tttt  -  ldr Rt ADDR_PCREL19
+                 */
+
+                imm64 = ((int64_t)((uint64_t)((inst >> 3) & 0x1FFFFC) << 43) >> 43);
+
+                *(uint64_t *)(trailer - 2) = *(uint64_t *) ((long)&area[offset] + imm64);
+                end -= 2;
+                trailer -= 2;
+
+                buffer[start] = (inst & 0xbf000000) | (inst & 0x1f) | ((end  -  start) * 32);
+                start ++;
+            }
+#endif
+            else {
+                buffer[start++] = backup[offset];
+            }
+        }
+
+        buffer[start+0] = 0x58000050;
+        buffer[start+1] = 0xD61F0200;
+        *(uint64_t *)(buffer + start + 2) = (uint64_t)(area + 4);
+
+        if (mprotect(buffer, length, PROT_READ | PROT_EXEC) == -1) {
+            MSLog(MSLogLevelError, "MS:Error:mprotect():%d", errno);
+            goto fail;
+        }
+
+        __clear_cache(buffer, (char *)buffer + length);
+
+        *result = buffer;
+
+        if (MSDebug) {
+            char name[16];
+            sprintf(name, "%p", *result);
+            MSLogHexEx(buffer, length, 4, name);
+        }
+
+    }
+
+    {
+        SubstrateHookMemory code(process, symbol, used);
+
+        arm[0] = 0x58000050;
+        arm[1] = 0xD61F0200;
+        *(uint64_t *)(arm + 2) = reinterpret_cast<uint64_t>(replace);
+    }
+
+    if (MSDebug) {
+        char name[16];
+        sprintf(name, "%p", area);
+        MSLogHexEx(area, used + sizeof(uint32_t), 4, name);
+    }
+}
+#endif
+
 _extern void MSHookFunction(void *symbol, void *replace, void **result) {
      SubstrateHookFunction(NULL, symbol, replace, result);
 }
