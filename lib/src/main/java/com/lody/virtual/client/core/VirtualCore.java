@@ -22,6 +22,7 @@ import android.os.Process;
 import android.os.RemoteException;
 
 import com.lody.virtual.R;
+import com.lody.virtual.client.NativeEngine;
 import com.lody.virtual.client.VClientImpl;
 import com.lody.virtual.client.env.Constants;
 import com.lody.virtual.client.env.VirtualRuntime;
@@ -172,6 +173,7 @@ public final class VirtualCore {
 
 
     public void startup(Context context) throws Throwable {
+        NativeEngine.loadNativeEngineClass();
         if (!isStartUp) {
             if (Looper.myLooper() != Looper.getMainLooper()) {
                 throw new IllegalStateException("VirtualCore.startup() must called in main thread.");

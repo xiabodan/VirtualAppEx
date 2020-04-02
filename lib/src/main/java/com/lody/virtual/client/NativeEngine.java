@@ -44,6 +44,10 @@ public class NativeEngine {
     }
 
 
+    public static void loadNativeEngineClass() {
+        VLog.i(TAG, "loadNativeEngineClass");
+    }
+
     public static void startDexOverride() {
         List<InstalledAppInfo> installedAppInfos = VirtualCore.get().getInstalledApps(0);
         sDexOverrideMap = new HashMap<>(installedAppInfos.size());

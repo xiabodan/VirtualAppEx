@@ -62,6 +62,7 @@ import com.lody.virtual.helper.utils.VLog;
 import com.lody.virtual.os.VUserHandle;
 import com.lody.virtual.os.VUserInfo;
 import com.lody.virtual.remote.AppTaskInfo;
+import com.lody.virtual.remote.VParceledListSlice;
 import com.lody.virtual.server.interfaces.IAppRequestListener;
 
 import java.io.File;
@@ -1358,6 +1359,11 @@ class MethodProxies {
             int nameIdx = getProviderNameIndex();
             String name = (String) args[nameIdx];
             int userId = VUserHandle.myUserId();
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                if (args[1] instanceof String) {
+                    args[1] =  VirtualCore.get().getHostPkg();
+                }
+            }
             ProviderInfo info = VPackageManager.get().resolveContentProvider(name, 0, userId);
             if (info != null && info.enabled && isAppPkg(info.packageName)) {
                 int targetVPid = VActivityManager.get().initProcess(info.packageName, info.processName, userId);
@@ -1410,6 +1416,9 @@ class MethodProxies {
 
 
         public int getProviderNameIndex() {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                return 2;
+            }
             return 1;
         }
 

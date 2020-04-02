@@ -63,14 +63,14 @@ inline void logf(const char* tag, const char* msg, ARGS... args) noexcept {
 }
 
 
-#ifdef LOG_TAG
+//#ifdef LOG_TAG
 # define ALOGV(...) ::facebook::alog::logv(LOG_TAG, __VA_ARGS__)
 # define ALOGD(...) ::facebook::alog::logd(LOG_TAG, __VA_ARGS__)
 # define ALOGI(...) ::facebook::alog::logi(LOG_TAG, __VA_ARGS__)
 # define ALOGW(...) ::facebook::alog::logw(LOG_TAG, __VA_ARGS__)
 # define ALOGE(...) ::facebook::alog::loge(LOG_TAG, __VA_ARGS__)
 # define ALOGF(...) ::facebook::alog::logf(LOG_TAG, __VA_ARGS__)
-#endif
+//#endif
 
 }}
 

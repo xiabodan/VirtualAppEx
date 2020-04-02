@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.IInterface;
 import android.os.ParcelFileDescriptor;
 
+import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.client.hook.base.MethodBox;
 import com.lody.virtual.helper.utils.VLog;
 
@@ -149,10 +150,18 @@ public class ProviderHook implements InvocationHandler {
         try {
             String name = method.getName();
             if ("call".equals(name)) {
-                String methodName = (String) args[start];
-                String arg = (String) args[start + 1];
-                Bundle extras = (Bundle) args[start + 2];
-                return call(methodBox, methodName, arg, extras);
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                    String authority = (String) args[start];
+                    String methodName = (String) args[start + 1];
+                    String arg = (String) args[start + 2];
+                    Bundle extras = (Bundle) args[start + 3];
+                    return call(methodBox, methodName, arg, extras);
+                } else {
+                    String methodName = (String) args[start];
+                    String arg = (String) args[start + 1];
+                    Bundle extras = (Bundle) args[start + 2];
+                    return call(methodBox, methodName, arg, extras);
+                }
             } else if ("insert".equals(name)) {
                 Uri url = (Uri) args[start];
                 ContentValues initialValues = (ContentValues) args[start + 1];
