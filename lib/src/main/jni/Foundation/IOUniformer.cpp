@@ -12,6 +12,7 @@
 #include "SymbolFinder.h"
 
 bool iu_loaded = false;
+static bool DEBUG = false;
 
 void IOUniformer::init_env_before_all() {
     if (iu_loaded)
@@ -109,19 +110,19 @@ __BEGIN_DECLS
 #define RETURN_IF_FORBID if(res == FORBID) return -1;
 
 static void log(const char* path, int mode, const char* tag) {
-    if (path != nullptr && tag != nullptr) {
+    if (DEBUG && path != nullptr && tag != nullptr) {
         ALOGD("## %s:%s, mode:%d\n", tag, path, mode);
     }
 }
 
 static void log(const char* path, const char* tag) {
-    if (path != nullptr && tag != nullptr) {
+    if (DEBUG && path != nullptr && tag != nullptr) {
         ALOGD("## %s:%s\n", tag, path);
     }
 }
 
 static void log(const char* path, const char* path2, const char* tag) {
-    if (path != nullptr && path2 != nullptr && tag != nullptr) {
+    if (DEBUG && path != nullptr && path2 != nullptr && tag != nullptr) {
         ALOGD("## %s:%s -> %s\n", tag, path, path2);
     }
 }

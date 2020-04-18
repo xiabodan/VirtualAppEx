@@ -84,7 +84,8 @@ public class MethodProxies {
                 }
                 return 0;
             }
-            return super.call(who, method, args);
+            return true;
+            // return super.call(who, method, args);
         }
     }
 
