@@ -1,0 +1,65 @@
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:123:65: error: invalid application of 'sizeof' to an incomplete type 'unsigned char []'
+static unsigned int trampolineSize = roundUpToPtrSize(MAX(sizeof(trampoline), sizeof(trampolineForBackup)));
+                                                                ^~~~~~~~~~~~
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:11:21: note: expanded from macro 'MAX'
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+                    ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/common.h:15:30: note: expanded from macro 'roundUpToPtrSize'
+#define roundUpToPtrSize(v) (v + pointer_size - 1 - ((v + pointer_size - 1) & (pointer_size - 1)))
+                             ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:123:86: error: use of undeclared identifier 'trampolineForBackup'
+static unsigned int trampolineSize = roundUpToPtrSize(MAX(sizeof(trampoline), sizeof(trampolineForBackup)));
+                                                                                     ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:123:65: error: invalid application of 'sizeof' to an incomplete type 'unsigned char []'
+static unsigned int trampolineSize = roundUpToPtrSize(MAX(sizeof(trampoline), sizeof(trampolineForBackup)));
+                                                                ^~~~~~~~~~~~
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:11:33: note: expanded from macro 'MAX'
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+                                ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/common.h:15:30: note: expanded from macro 'roundUpToPtrSize'
+#define roundUpToPtrSize(v) (v + pointer_size - 1 - ((v + pointer_size - 1) & (pointer_size - 1)))
+                             ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:123:86: error: use of undeclared identifier 'trampolineForBackup'
+static unsigned int trampolineSize = roundUpToPtrSize(MAX(sizeof(trampoline), sizeof(trampolineForBackup)));
+                                                                                     ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:123:65: error: invalid application of 'sizeof' to an incomplete type 'unsigned char []'
+static unsigned int trampolineSize = roundUpToPtrSize(MAX(sizeof(trampoline), sizeof(trampolineForBackup)));
+                                                                ^~~~~~~~~~~~
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:11:21: note: expanded from macro 'MAX'
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+                    ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/common.h:15:55: note: expanded from macro 'roundUpToPtrSize'
+#define roundUpToPtrSize(v) (v + pointer_size - 1 - ((v + pointer_size - 1) & (pointer_size - 1)))
+                                                      ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:123:86: error: use of undeclared identifier 'trampolineForBackup'
+static unsigned int trampolineSize = roundUpToPtrSize(MAX(sizeof(trampoline), sizeof(trampolineForBackup)));
+                                                                                     ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:123:65: error: invalid application of 'sizeof' to an incomplete type 'unsigned char []'
+static unsigned int trampolineSize = roundUpToPtrSize(MAX(sizeof(trampoline), sizeof(trampolineForBackup)));
+                                                                ^~~~~~~~~~~~
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:11:33: note: expanded from macro 'MAX'
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+                                ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/common.h:15:55: note: expanded from macro 'roundUpToPtrSize'
+#define roundUpToPtrSize(v) (v + pointer_size - 1 - ((v + pointer_size - 1) & (pointer_size - 1)))
+                                                      ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:123:86: error: use of undeclared identifier 'trampolineForBackup'
+static unsigned int trampolineSize = roundUpToPtrSize(MAX(sizeof(trampoline), sizeof(trampolineForBackup)));
+                                                                                     ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:129:56: error: use of undeclared identifier 'trampolineForBackup'
+        memcpy(targetAddr, trampolineForBackup, sizeof(trampolineForBackup));
+                                                       ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:129:28: error: use of undeclared identifier 'trampolineForBackup'
+        memcpy(targetAddr, trampolineForBackup, sizeof(trampolineForBackup));
+                           ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:133:22: error: invalid application of 'sizeof' to an incomplete type 'unsigned char []'
+               sizeof(trampoline)); // do not use trampolineSize since it's a rounded size
+                     ^~~~~~~~~~~~
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:174:2: error: Unsupported architecture
+#error Unsupported architecture
+ ^
+Z:/work/VirtualAppEx/yahfa/src/main/jni/trampoline.c:191:2: error: Unsupported architecture
+#error Unsupported architecture
+ ^
+13 errors generated.
+make: *** [Z:/work/VirtualAppEx/yahfa/build/intermediates/ndkBuild/debug/obj/local/mips/objs-debug/yahfa/trampoline.o] Error 1

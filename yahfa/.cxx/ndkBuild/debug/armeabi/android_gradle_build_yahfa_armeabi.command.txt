@@ -1,0 +1,14 @@
+Executable : E:\Download\android-ndk-r14b\ndk-build.cmd
+arguments : 
+NDK_PROJECT_PATH=null
+APP_BUILD_SCRIPT=Z:\work\VirtualAppEx\yahfa\src\main\jni\Android.mk
+NDK_APPLICATION_MK=Z:\work\VirtualAppEx\yahfa\src\main\jni\Application.mk
+APP_ABI=armeabi
+NDK_ALL_ABIS=armeabi
+NDK_DEBUG=1
+APP_PLATFORM=android-22
+NDK_OUT=Z:/work/VirtualAppEx/yahfa/build/intermediates/ndkBuild/debug/obj
+NDK_LIBS_OUT=Z:\work\VirtualAppEx\yahfa\build\intermediates\ndkBuild\debug\lib
+yahfa
+jvmArgs : 
+

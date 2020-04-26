@@ -1,0 +1,2 @@
+[x86] Compile        : yahfa <= trampoline.c
+[x86] SharedLibrary  : libyahfa.so

@@ -1,0 +1,18 @@
+{
+  "buildFiles": [
+    "Z:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Android.mk",
+    "Z:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Application.mk"
+  ],
+  "cleanCommands": [
+    "E:\\Download\\android-ndk-r14b\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dZ:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Android.mk NDK_APPLICATION_MK\u003dZ:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Application.mk APP_ABI\u003dx86_64 NDK_ALL_ABIS\u003dx86_64 NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-22 NDK_OUT\u003dZ:/work/VirtualAppEx/yahfa/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003dZ:\\work\\VirtualAppEx\\yahfa\\build\\intermediates\\ndkBuild\\debug\\lib clean"
+  ],
+  "buildTargetsCommand": "E:\\Download\\android-ndk-r14b\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dZ:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Android.mk NDK_APPLICATION_MK\u003dZ:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Application.mk APP_ABI\u003dx86_64 NDK_ALL_ABIS\u003dx86_64 NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-22 NDK_OUT\u003dZ:/work/VirtualAppEx/yahfa/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003dZ:\\work\\VirtualAppEx\\yahfa\\build\\intermediates\\ndkBuild\\debug\\lib {LIST_OF_TARGETS_TO_BUILD}",
+  "libraries": {
+    "yahfa-debug-x86_64": {
+      "artifactName": "yahfa",
+      "buildCommand": "E:\\Download\\android-ndk-r14b\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dZ:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Android.mk NDK_APPLICATION_MK\u003dZ:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Application.mk APP_ABI\u003dx86_64 NDK_ALL_ABIS\u003dx86_64 NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-22 NDK_OUT\u003dZ:/work/VirtualAppEx/yahfa/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003dZ:\\work\\VirtualAppEx\\yahfa\\build\\intermediates\\ndkBuild\\debug\\lib Z:/work/VirtualAppEx/yahfa/build/intermediates/ndkBuild/debug/obj/local/x86_64/libyahfa.so",
+      "abi": "x86_64",
+      "output": "Z:\\work\\VirtualAppEx\\yahfa\\build\\intermediates\\ndkBuild\\debug\\obj\\local\\x86_64\\libyahfa.so"
+    }
+  }
+}

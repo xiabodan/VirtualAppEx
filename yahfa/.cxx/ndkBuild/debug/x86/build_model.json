@@ -1,0 +1,69 @@
+{
+  "variant": {
+    "module": {
+      "rootBuildGradleFolder": "Z:\\work\\VirtualAppEx",
+      "sdkFolder": "C:\\Users\\admin\\AppData\\Local\\Android\\Sdk",
+      "isNativeCompilerSettingsCacheEnabled": false,
+      "isBuildOnlyTargetAbiEnabled": true,
+      "splitsAbiFilterSet": [],
+      "intermediatesFolder": "Z:\\work\\VirtualAppEx\\yahfa\\build\\intermediates",
+      "gradleModulePathName": ":yahfa",
+      "moduleRootFolder": "Z:\\work\\VirtualAppEx\\yahfa",
+      "makeFile": "Z:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Android.mk",
+      "buildSystem": "NDK_BUILD",
+      "compilerSettingsCacheFolder": "Z:\\work\\VirtualAppEx\\.cxx",
+      "cxxFolder": "Z:\\work\\VirtualAppEx\\yahfa\\.cxx",
+      "ndkFolder": "E:\\Download\\android-ndk-r14b",
+      "ndkVersion": "14.1.3816874",
+      "ndkSupportedAbiList": [
+        "ARMEABI",
+        "ARMEABI_V7A",
+        "ARM64_V8A",
+        "X86",
+        "X86_64",
+        "MIPS",
+        "MIPS64"
+      ],
+      "ndkDefaultAbiList": [
+        "ARMEABI",
+        "ARMEABI_V7A",
+        "ARM64_V8A",
+        "X86",
+        "X86_64",
+        "MIPS",
+        "MIPS64"
+      ],
+      "cmakeToolchainFile": "."
+    },
+    "buildSystemArgumentList": [],
+    "cFlagList": [],
+    "cppFlagsList": [],
+    "variantName": "debug",
+    "soFolder": "Z:\\work\\VirtualAppEx\\yahfa\\build\\intermediates\\ndkBuild\\debug\\lib",
+    "objFolder": "Z:\\work\\VirtualAppEx\\yahfa\\build\\intermediates\\ndkBuild\\debug\\obj\\local",
+    "jsonFolder": "Z:\\work\\VirtualAppEx\\yahfa\\.cxx\\ndkBuild\\debug",
+    "gradleBuildOutputFolder": "Z:\\work\\VirtualAppEx\\yahfa\\.cxx\\cxx\\debug",
+    "isDebuggableEnabled": true,
+    "validAbiList": [
+      "ARMEABI",
+      "ARMEABI_V7A",
+      "ARM64_V8A",
+      "X86",
+      "X86_64",
+      "MIPS",
+      "MIPS64"
+    ],
+    "buildTargetSet": []
+  },
+  "abi": "X86",
+  "abiPlatformVersion": 22,
+  "cxxBuildFolder": "Z:\\work\\VirtualAppEx\\yahfa\\.cxx\\ndkBuild\\debug\\x86",
+  "jsonFile": "Z:\\work\\VirtualAppEx\\yahfa\\.cxx\\ndkBuild\\debug\\x86\\android_gradle_build.json",
+  "gradleBuildOutputFolder": "Z:\\work\\VirtualAppEx\\yahfa\\.cxx\\cxx\\debug\\x86",
+  "objFolder": "Z:\\work\\VirtualAppEx\\yahfa\\build\\intermediates\\ndkBuild\\debug\\obj\\local\\x86",
+  "buildCommandFile": "Z:\\work\\VirtualAppEx\\yahfa\\.cxx\\ndkBuild\\debug\\x86\\build_command.txt",
+  "buildOutputFile": "Z:\\work\\VirtualAppEx\\yahfa\\.cxx\\ndkBuild\\debug\\x86\\build_output.txt",
+  "modelOutputFile": "Z:\\work\\VirtualAppEx\\yahfa\\.cxx\\ndkBuild\\debug\\x86\\build_model.json",
+  "jsonGenerationLoggingRecordFile": "Z:\\work\\VirtualAppEx\\yahfa\\.cxx\\ndkBuild\\debug\\x86\\json_generation_record.json",
+  "compileCommandsJsonFile": "Z:\\work\\VirtualAppEx\\yahfa\\.cxx\\ndkBuild\\debug\\x86\\compile_commands.json"
+}

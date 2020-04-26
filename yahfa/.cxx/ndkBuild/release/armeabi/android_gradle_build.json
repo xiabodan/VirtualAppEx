@@ -1,0 +1,38 @@
+{
+  "buildFiles": [
+    "Z:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Android.mk",
+    "Z:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Application.mk"
+  ],
+  "cleanCommands": [
+    "E:\\Download\\android-ndk-r14b\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dZ:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Android.mk NDK_APPLICATION_MK\u003dZ:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Application.mk APP_ABI\u003darmeabi NDK_ALL_ABIS\u003darmeabi NDK_DEBUG\u003d0 APP_PLATFORM\u003dandroid-22 NDK_OUT\u003dZ:/work/VirtualAppEx/yahfa/build/intermediates/ndkBuild/release/obj NDK_LIBS_OUT\u003dZ:\\work\\VirtualAppEx\\yahfa\\build\\intermediates\\ndkBuild\\release\\lib clean"
+  ],
+  "buildTargetsCommand": "E:\\Download\\android-ndk-r14b\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dZ:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Android.mk NDK_APPLICATION_MK\u003dZ:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Application.mk APP_ABI\u003darmeabi NDK_ALL_ABIS\u003darmeabi NDK_DEBUG\u003d0 APP_PLATFORM\u003dandroid-22 NDK_OUT\u003dZ:/work/VirtualAppEx/yahfa/build/intermediates/ndkBuild/release/obj NDK_LIBS_OUT\u003dZ:\\work\\VirtualAppEx\\yahfa\\build\\intermediates\\ndkBuild\\release\\lib {LIST_OF_TARGETS_TO_BUILD}",
+  "libraries": {
+    "yahfa-release-armeabi": {
+      "buildCommand": "E:\\Download\\android-ndk-r14b\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dZ:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Android.mk NDK_APPLICATION_MK\u003dZ:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\Application.mk APP_ABI\u003darmeabi NDK_ALL_ABIS\u003darmeabi NDK_DEBUG\u003d0 APP_PLATFORM\u003dandroid-22 NDK_OUT\u003dZ:/work/VirtualAppEx/yahfa/build/intermediates/ndkBuild/release/obj NDK_LIBS_OUT\u003dZ:\\work\\VirtualAppEx\\yahfa\\build\\intermediates\\ndkBuild\\release\\lib Z:/work/VirtualAppEx/yahfa/build/intermediates/ndkBuild/release/obj/local/armeabi/libyahfa.so",
+      "toolchain": "toolchain-armeabi",
+      "abi": "armeabi",
+      "artifactName": "yahfa",
+      "files": [
+        {
+          "src": "Z:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\HookMain.c",
+          "flags": "-gcc-toolchain E:/Download/android-ndk-r14b/build//../toolchains/arm-linux-androideabi-4.9/prebuilt/windows-x86_64 -fpic -ffunction-sections -funwind-tables -fstack-protector-strong -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -no-canonical-prefixes -fno-integrated-as -g -target armv5te-none-linux-androideabi -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -DNDEBUG -IZ:/work/VirtualAppEx/yahfa/src/main/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security --sysroot E:/Download/android-ndk-r14b/build//../platforms/android-22/arch-arm"
+        },
+        {
+          "src": "Z:\\work\\VirtualAppEx\\yahfa\\src\\main\\jni\\trampoline.c",
+          "flags": "-gcc-toolchain E:/Download/android-ndk-r14b/build//../toolchains/arm-linux-androideabi-4.9/prebuilt/windows-x86_64 -fpic -ffunction-sections -funwind-tables -fstack-protector-strong -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -no-canonical-prefixes -fno-integrated-as -g -target armv5te-none-linux-androideabi -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -DNDEBUG -IZ:/work/VirtualAppEx/yahfa/src/main/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security --sysroot E:/Download/android-ndk-r14b/build//../platforms/android-22/arch-arm"
+        }
+      ],
+      "output": "Z:\\work\\VirtualAppEx\\yahfa\\build\\intermediates\\ndkBuild\\release\\obj\\local\\armeabi\\libyahfa.so"
+    }
+  },
+  "toolchains": {
+    "toolchain-armeabi": {
+      "cCompilerExecutable": "E:\\Download\\android-ndk-r14b\\build\\..\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang.exe"
+    }
+  },
+  "cFileExtensions": [
+    "c"
+  ],
+  "cppFileExtensions": []
+}
