@@ -31,7 +31,7 @@ public class VAccount implements Parcelable {
     public long lastAuthenticatedTime;
     public Map<String, String> authTokens;
     public Map<String, String> userDatas;
-
+    public Map<String, Integer> packageToVisibility;
 
     public VAccount(int userId, Account account) {
         this.userId = userId;
@@ -39,6 +39,7 @@ public class VAccount implements Parcelable {
         type = account.type;
         authTokens = new HashMap<>();
         userDatas = new HashMap<>();
+        packageToVisibility = new HashMap<>();
     }
 
     public VAccount(Parcel in) {
@@ -55,12 +56,21 @@ public class VAccount implements Parcelable {
             String value = in.readString();
             authTokens.put(key, value);
         }
+
         int userDatasSize = in.readInt();
         userDatas = new HashMap<>(userDatasSize);
         for (int i = 0; i < userDatasSize; i++) {
             String key = in.readString();
             String value = in.readString();
             userDatas.put(key, value);
+        }
+
+        int packageToVisibilitySize = in.readInt();
+        packageToVisibility = new HashMap<>(packageToVisibilitySize);
+        for (int i = 0; i < packageToVisibilitySize; i++) {
+            String key = in.readString();
+            Integer value = in.readInt();
+            packageToVisibility.put(key, value);
         }
     }
 
@@ -86,6 +96,11 @@ public class VAccount implements Parcelable {
         for (Map.Entry<String, String> entry : userDatas.entrySet()) {
             dest.writeString(entry.getKey());
             dest.writeString(entry.getValue());
+        }
+        dest.writeInt(packageToVisibility.size());
+        for (Map.Entry<String, Integer> entry : packageToVisibility.entrySet()) {
+            dest.writeString(entry.getKey());
+            dest.writeInt(entry.getValue());
         }
     }
 }

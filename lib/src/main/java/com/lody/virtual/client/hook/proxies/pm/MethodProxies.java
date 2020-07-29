@@ -27,9 +27,11 @@ import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.client.hook.base.MethodProxy;
 import com.lody.virtual.client.hook.utils.MethodParameterUtils;
 import com.lody.virtual.client.ipc.VPackageManager;
+import com.lody.virtual.helper.Features;
 import com.lody.virtual.helper.collection.ArraySet;
 import com.lody.virtual.helper.compat.ParceledListSliceCompat;
 import com.lody.virtual.helper.utils.ArrayUtils;
+import com.lody.virtual.helper.utils.VLog;
 import com.lody.virtual.os.VUserHandle;
 import com.lody.virtual.server.IPackageInstaller;
 import com.lody.virtual.server.pm.installer.SessionInfo;
@@ -51,6 +53,8 @@ import mirror.android.content.pm.ParceledListSlice;
  */
 @SuppressWarnings("unused")
 class MethodProxies {
+    private static final boolean DEBUG = Features.FEATURE_DEBUG_SUPPORT;
+    private static final String TAG = "VAPM";
 
     static class IsPackageAvailable extends MethodProxy {
 
@@ -756,6 +760,10 @@ class MethodProxies {
             String[] callingPkgs = VPackageManager.get().getPackagesForUid(callingUid);
             String[] targetPkgs = VPackageManager.get().getPackagesForUid(uid);
             String[] selfPkgs = VPackageManager.get().getPackagesForUid(Process.myUid());
+            VLog.d(TAG, "getPackagesForUid callingPkgs " + Arrays.toString(callingPkgs)
+                    + ", targetPkgs " + Arrays.toString(targetPkgs)
+                    + ", selfPkgs " + Arrays.toString(selfPkgs)
+                    + ", uid " + uid + ", callingUid " + callingUid + ", Process.myUid " + Process.myUid());
 
             Set<String> pkgList = new ArraySet<>(2);
             if (callingPkgs != null && callingPkgs.length > 0) {

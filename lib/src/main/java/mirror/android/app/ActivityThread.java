@@ -41,12 +41,19 @@ public class ActivityThread {
     public static RefObject<Instrumentation> mInstrumentation;
     public static RefObject<Map<String, WeakReference<?>>> mPackages;
     public static RefObject<Map> mProviderMap;
+
     @MethodParams({IBinder.class, List.class})
     public static RefMethod<Void> performNewIntents;
+
     public static RefStaticObject<IInterface> sPackageManager;
+
     @MethodParams({IBinder.class, String.class, int.class, int.class, Intent.class})
     public static RefMethod<Void> sendActivityResult;
+
     public static RefMethod<Binder> getApplicationThread;
+
+    @MethodParams({IBinder.class, List.class})
+    public static RefMethod<Void> handleNewIntent;
 
     public static Object installProvider(Object mainThread, Context context, ProviderInfo providerInfo, Object holder) {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {

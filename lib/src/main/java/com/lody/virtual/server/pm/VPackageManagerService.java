@@ -20,6 +20,7 @@ import android.util.Log;
 import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.client.fixer.ComponentFixer;
 import com.lody.virtual.client.stub.VASettings;
+import com.lody.virtual.helper.Features;
 import com.lody.virtual.helper.compat.ObjectsCompat;
 import com.lody.virtual.os.VUserHandle;
 import com.lody.virtual.remote.VParceledListSlice;
@@ -46,8 +47,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Lody
  */
 public class VPackageManagerService implements IPackageManager {
+    static final boolean DEBUG = Features.FEATURE_DEBUG_SUPPORT;
+    static final String TAG = "VAPMS";
 
-    static final String TAG = "PackageManager";
     static final Comparator<ResolveInfo> sResolvePrioritySorter = new Comparator<ResolveInfo>() {
         public int compare(ResolveInfo r1, ResolveInfo r2) {
             int v1 = r1.priority;
@@ -1066,4 +1068,13 @@ public class VPackageManagerService implements IPackageManager {
         }
     }
 
+    private VPackage getPackageLocked(int vuid, String packageName) {
+        return  mPackages.get(packageName);
+    }
+
+    public boolean isPluginPackage(int vuid, String packageName) {
+        synchronized (mPackages) {
+            return getPackageLocked(vuid, packageName) != null;
+        }
+    }
 }

@@ -172,7 +172,7 @@ public class VPackageManager {
                 if (Build.VERSION.SDK_INT >= 28) {
                     info.sharedLibraryFiles = new String[]{"/system/framework/android.test.base.jar",
                             "/system/framework/android.test.mock.jar", "/system/framework/android.test.runner.jar", "/system/framework/javax.obex.jar",
-                            "/system/framework/org.apache.http.legacy.boot.jar"};
+                            "/system/framework/org.apache.http.legacy.boot.jar", "/system/framework/org.apache.http.legacy.jar"};
                 }
             }
             return info;

@@ -29,6 +29,7 @@ import android.util.SparseArray;
 import android.util.Xml;
 
 import com.lody.virtual.client.core.VirtualCore;
+import com.lody.virtual.helper.Features;
 import com.lody.virtual.helper.compat.AccountManagerCompat;
 import com.lody.virtual.helper.utils.VLog;
 import com.lody.virtual.os.VBinder;
@@ -45,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -64,9 +66,10 @@ import static android.accounts.AccountManager.ERROR_CODE_BAD_ARGUMENTS;
  */
 public class VAccountManagerService implements IAccountManager {
 
+    private static final Boolean DEBUG = Features.FEATURE_DEBUG_SUPPORT;
     private static final AtomicReference<VAccountManagerService> sInstance = new AtomicReference<>();
     private static final long CHECK_IN_TIME = 30 * 24 * 60 * 1000L;
-    private static final String TAG = VAccountManagerService.class.getSimpleName();
+    private static final String TAG = "VAAccountMS";
     private final SparseArray<List<VAccount>> accountsByUserId = new SparseArray<>();
     private final LinkedList<AuthTokenRecord> authTokenRecords = new LinkedList<>();
     private final LinkedHashMap<String, Session> mSessions = new LinkedHashMap<>();
@@ -74,9 +77,30 @@ public class VAccountManagerService implements IAccountManager {
     private Context mContext = VirtualCore.get().getContext();
     private long lastAccountChangeTime = 0;
 
+    // <vuid, HashMap<AuthenticatorDescription.type, AccountService>>
+    private final SparseArray<HashMap<String, AccountService>> mAccountServices = new SparseArray<HashMap<String, AccountService>>();
 
     public static VAccountManagerService get() {
         return sInstance.get();
+    }
+
+    final class AccountService {
+        public AuthenticatorDescription mAuthenticatorDescription;
+        public ServiceInfo mServiceInfo;
+        public AccountService(AuthenticatorDescription description, ServiceInfo serviceInfo) {
+            mAuthenticatorDescription = description;
+            mServiceInfo = serviceInfo;
+        }
+
+        @Override
+        public String toString() {
+            if (DEBUG) {
+                return String.format("AccountService { %s, %s }",
+                        mAuthenticatorDescription, new ComponentName(mServiceInfo.packageName, mServiceInfo.name));
+            } else {
+                return super.toString();
+            }
+        }
     }
 
     public static void systemReady() {
@@ -85,6 +109,23 @@ public class VAccountManagerService implements IAccountManager {
         sInstance.set(service);
     }
 
+    private VAccountManagerService() {
+        new Thread() {
+            @Override
+            public void run() {
+                loadAccountServices();
+            }
+        }.start();
+    }
+
+    private void loadAccountServices() {
+        synchronized (mAccountServices) {
+            mAccountServices.clear();
+            VLog.i(TAG, "loadAccountServices: load all account services begin");
+            // loadAccountServiceLocked(null);
+            VLog.i(TAG, "loadAccountServices: load all account services done");
+        }
+    }
 
     private static AuthenticatorDescription parseAuthenticatorDescription(Resources resources, String packageName,
                                                                           AttributeSet attributeSet) {
@@ -605,13 +646,162 @@ public class VAccountManagerService implements IAccountManager {
             }
 
         }.bind();
-
     }
 
     @Override
     public boolean addAccountExplicitly(int userId, Account account, String password, Bundle extras) {
         if (account == null) throw new IllegalArgumentException("account is null");
         return insertAccountIntoDatabase(userId, account, password, extras);
+    }
+
+    @Override
+    public boolean addAccountExplicitlyWithVisibility(int vuid, Account account, String password, Bundle extras, Map packageToVisibility) {
+        final int callingUid = Binder.getCallingUid();
+        VLog.v(TAG, "addAccountExplicitlyWithVisibility: vuid " + vuid
+                + ", account " + account
+                + ", caller's uid " + callingUid
+                + ", pid " + Binder.getCallingPid()
+                + ", visibility " + packageToVisibility);
+        if (account == null) throw new IllegalArgumentException("account is null");
+
+        if (!insertAccountIntoDatabase(vuid, account, password, extras)) {
+            return false;
+        }
+        if (packageToVisibility != null) {
+            for (Map.Entry<String, Integer> entry : ((Map<String, Integer>)packageToVisibility).entrySet()) {
+                 setAccountVisibility(vuid, account, entry.getKey() /* package */, entry.getValue() /* visibility */);
+            }
+        }
+        return true;
+    }
+
+    private VAccount getVAccountByNameTypeLocked(int vuid, String name, String type) {
+        List<VAccount> list = accountsByUserId.get(vuid);
+        if (list == null) {
+            return null;
+        }
+        for (VAccount account : list) {
+            if (TextUtils.equals(account.name, name) &&
+                    TextUtils.equals(account.type, type)) {
+                return account;
+            }
+        }
+        return null;
+    }
+
+    private VAccount getVAccountByAccountLocked(int vuid, Account account) {
+        return getVAccountByNameTypeLocked(vuid, account.name, account.type);
+    }
+
+    private AccountService getAccountServiceByVuidType(int vuid, String type, boolean checkInstall) {
+        synchronized (mAccountServices) {
+            HashMap<String, AccountService> mapForVuid = mAccountServices.get(vuid);
+            if (mapForVuid != null) {
+                AccountService service = mapForVuid.get(type);
+                if (!checkInstall) {
+                    return service;
+                }
+                if (service != null && VPackageManagerService.get().isPluginPackage(
+                        vuid, service.mServiceInfo.packageName)) {
+                    return service;
+                }
+            }
+            return null;
+        }
+    }
+
+    private AccountService getAccountServiceByVuidType(int vuid, String type) {
+        return getAccountServiceByVuidType(vuid, type, true);
+    }
+
+    public boolean isPluginAccountType(int vuid, String type) {
+        return getAccountServiceByVuidType(vuid, type) != null;
+    }
+
+    private boolean isSpecialPackageKey(String packageName) {
+        return (AccountManager.PACKAGE_NAME_KEY_LEGACY_VISIBLE.equals(packageName)
+                || AccountManager.PACKAGE_NAME_KEY_LEGACY_NOT_VISIBLE.equals(packageName));
+    }
+
+    @Override
+    public boolean setAccountVisibility(int vuid, Account account, String packageName, int newVisibility) {
+        if (account == null) throw new IllegalArgumentException("account is null");
+        synchronized (accountsByUserId) {
+            final VAccount vAccount = getVAccountByAccountLocked(vuid, account);
+            if (vAccount == null) {
+                return false;
+            }
+            if (!isSpecialPackageKey(packageName) &&
+                    !VPackageManagerService.get().isPluginPackage(vuid, packageName)) {
+                return false;
+            }
+            vAccount.packageToVisibility.put(packageName, newVisibility);
+            // syncAccountsConfigLocked();
+        }
+        return true;
+    }
+
+    @Override
+    public Map getPackagesAndVisibilityForAccount(int vuid, Account account) {
+        if (account == null) throw new IllegalArgumentException("account is null");
+        synchronized (accountsByUserId) {
+            final VAccount vAccount = getVAccountByAccountLocked(vuid, account);
+            if (vAccount != null) {
+                return vAccount.packageToVisibility;
+            }
+        }
+        return Collections.EMPTY_MAP;
+    }
+
+    @Override
+    public int getAccountVisibility(int vuid, Account account, String packageName) {
+        if (account == null) throw new IllegalArgumentException("account is null");
+        synchronized (accountsByUserId) {
+            final VAccount vAccount = getVAccountByAccountLocked(vuid, account);
+            final Integer visibility = vAccount != null ? vAccount.packageToVisibility.get(packageName) : null;
+            if (AccountManager.PACKAGE_NAME_KEY_LEGACY_VISIBLE.equals(packageName)) {
+                if (visibility != null) {
+                    return visibility;
+                } else {
+                    return AccountManager.VISIBILITY_USER_MANAGED_VISIBLE;
+                }
+            } else if (AccountManager.PACKAGE_NAME_KEY_LEGACY_NOT_VISIBLE.equals(packageName)) {
+                if (visibility != null) {
+                    return visibility;
+                } else {
+                    return AccountManager.VISIBILITY_USER_MANAGED_NOT_VISIBLE;
+                }
+            }
+            if (visibility != null) {
+                return visibility;
+            }
+            return AccountManager.VISIBILITY_VISIBLE;
+        }
+    }
+
+    @Override
+    public Map getAccountsAndVisibilityForPackage(int vuid, String packageName, String accountType) {
+        if (TextUtils.isEmpty(packageName)) {
+            return Collections.EMPTY_MAP;
+        }
+        synchronized (accountsByUserId) {
+            final HashMap<Account, Integer> visibility = new HashMap<Account, Integer>();
+            final List<VAccount> list = accountsByUserId.get(vuid);
+            if (list != null) {
+                for (VAccount vAccount : list) {
+                    if (!isPluginAccountType(vuid, vAccount.type)) {
+                        // This means the account is unavailable, e.g. GMS is disabled!
+                        continue;
+                    }
+                    if (!TextUtils.isEmpty(accountType) && !TextUtils.equals(accountType, vAccount.type)) {
+                        continue;
+                    }
+                    final Account account = new Account(vAccount.name, vAccount.type);
+                    visibility.put(account, getAccountVisibility(vuid, account, packageName));
+                }
+            }
+            return visibility;
+        }
     }
 
     @Override

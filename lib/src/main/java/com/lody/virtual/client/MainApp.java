@@ -29,7 +29,7 @@ public class MainApp {
             DexClassLoader dexClassLoader = new DexClassLoader(plugin,
                     base.getCodeCacheDir().getAbsolutePath(), null, classLoader);
             HookMain.doHookDefault(dexClassLoader, classLoader);
-            Log.d(TAG, "loadPlugin dexClassLoader:" + dexClassLoader);
+            Log.d(TAG, "Yahfa loadPlugin dexClassLoader:" + dexClassLoader);
         } catch (Exception e) {
             e.printStackTrace();
         }

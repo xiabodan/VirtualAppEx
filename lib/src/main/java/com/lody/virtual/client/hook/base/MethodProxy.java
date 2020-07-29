@@ -20,8 +20,17 @@ public abstract class MethodProxy {
 
     private boolean enable = true;
     private LogInvocation.Condition mInvocationLoggingCondition = LogInvocation.Condition.NEVER; // Inherit
+    private String methodName = null;
 
     public MethodProxy() {
+        LogInvocation loggingAnnotation = getClass().getAnnotation(LogInvocation.class);
+        if (loggingAnnotation != null) {
+            this.mInvocationLoggingCondition = loggingAnnotation.value();
+        }
+    }
+
+    public MethodProxy(String methodName) {
+        this.methodName = methodName;
         LogInvocation loggingAnnotation = getClass().getAnnotation(LogInvocation.class);
         if (loggingAnnotation != null) {
             this.mInvocationLoggingCondition = loggingAnnotation.value();
@@ -82,7 +91,9 @@ public abstract class MethodProxy {
                 || VirtualCore.get().isOutsidePackageVisible(info.packageName);
     }
 
-    public abstract String getMethodName();
+    public String getMethodName() {
+        return methodName;
+    }
 
     public boolean beforeCall(Object who, Method method, Object... args) {
         return true;

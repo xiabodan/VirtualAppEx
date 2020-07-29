@@ -43,6 +43,7 @@ import com.lody.virtual.client.ipc.VDeviceManager;
 import com.lody.virtual.client.ipc.VPackageManager;
 import com.lody.virtual.client.ipc.VirtualStorageManager;
 import com.lody.virtual.client.stub.VASettings;
+import com.lody.virtual.helper.Features;
 import com.lody.virtual.helper.compat.BuildCompat;
 import com.lody.virtual.helper.compat.StorageManagerCompat;
 import com.lody.virtual.helper.utils.VLog;
@@ -194,12 +195,22 @@ public final class VClientImpl extends IVClient.Stub {
                     data.token,
                     Collections.singletonList(intent)
             );
-        } else {
+        } else if (ActivityThreadNMR1.performNewIntents != null) {
             ActivityThreadNMR1.performNewIntents.call(
                     VirtualCore.mainThread(),
                     data.token,
                     Collections.singletonList(intent),
                     true);
+        } else {
+            if (ActivityThread.handleNewIntent != null) {
+                ActivityThread.handleNewIntent.call(
+                        VirtualCore.mainThread(),
+                        data.token,
+                        Collections.singletonList(intent)
+                );
+            } else {
+                Log.w(TAG, "handleNewIntent " + data + " fail");
+            }
         }
     }
 
@@ -321,7 +332,10 @@ public final class VClientImpl extends IVClient.Stub {
         if (Build.VERSION.SDK_INT >= 24 && "com.tencent.mm:recovery".equals(processName)) {
             fixWeChatRecovery(mInitialApplication);
         }
-        MainApp.loadPlugin(mInitialApplication, null);
+        // disable or enable yahfa hook default.
+        if (Features.FEATURE_YAHFA_SUPPORT) {
+            MainApp.loadPlugin(mInitialApplication, null);
+        }
         if (data.providers != null) {
             installContentProviders(mInitialApplication, data.providers);
         }

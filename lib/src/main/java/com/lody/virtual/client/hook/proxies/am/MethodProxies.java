@@ -50,6 +50,7 @@ import com.lody.virtual.client.stub.StubPendingActivity;
 import com.lody.virtual.client.stub.StubPendingReceiver;
 import com.lody.virtual.client.stub.StubPendingService;
 import com.lody.virtual.client.stub.VASettings;
+import com.lody.virtual.helper.Features;
 import com.lody.virtual.helper.compat.ActivityManagerCompat;
 import com.lody.virtual.helper.compat.BuildCompat;
 import com.lody.virtual.helper.utils.ArrayUtils;
@@ -88,7 +89,8 @@ import static com.lody.virtual.client.stub.VASettings.INTERCEPT_BACK_HOME;
  */
 @SuppressWarnings("unused")
 class MethodProxies {
-
+    private static final boolean DEBUG = Features.FEATURE_DEBUG_SUPPORT;
+    private static final String TAG = "VAAM";
 
     static class ForceStopPackage extends MethodProxy {
 
@@ -888,6 +890,46 @@ class MethodProxies {
         }
     }
 
+
+    static class bindIsolatedService extends MethodProxy {
+
+        @Override
+        public String getMethodName() {
+            return "bindIsolatedService";
+        }
+
+        @Override
+        public Object call(Object who, Method method, Object... args) throws Throwable {
+            IInterface caller = (IInterface) args[0];
+            IBinder token = (IBinder) args[1];
+            Intent service = (Intent) args[2];
+            String resolvedType = (String) args[3];
+            IServiceConnection conn = (IServiceConnection) args[4];
+            int flags = (int) args[5];
+            int userId = VUserHandle.myUserId();
+            if (isServerProcess()) {
+                userId = service.getIntExtra("_VA_|_user_id_", VUserHandle.USER_NULL);
+            }
+            if (userId == VUserHandle.USER_NULL) {
+                return method.invoke(who, args);
+            }
+            ServiceInfo serviceInfo = VirtualCore.get().resolveServiceInfo(service, userId);
+            if (serviceInfo != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    service.setComponent(new ComponentName(serviceInfo.packageName, serviceInfo.name));
+                }
+                conn = ServiceConnectionDelegate.getDelegate(conn);
+                return VActivityManager.get().bindService(caller.asBinder(), token, service, resolvedType,
+                        conn, flags, userId);
+            }
+            return method.invoke(who, args);
+        }
+
+        @Override
+        public boolean isEnable() {
+            return isAppProcess() || isServerProcess();
+        }
+    }
 
     static class StartService extends MethodProxy {
 

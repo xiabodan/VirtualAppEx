@@ -5,11 +5,14 @@ import android.accounts.IAccountManagerResponse;
 import android.content.Context;
 import android.os.Bundle;
 
+import com.lody.virtual.client.VClientImpl;
+import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.client.hook.base.MethodProxy;
 import com.lody.virtual.client.hook.base.BinderInvocationProxy;
 import com.lody.virtual.client.ipc.VAccountManager;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import mirror.android.accounts.IAccountManager;
 
@@ -37,6 +40,7 @@ public class AccountManagerStub extends BinderInvocationProxy {
 		addMethodProxy(new hasFeatures());
 		addMethodProxy(new getAccountsByFeatures());
 		addMethodProxy(new addAccountExplicitly());
+		addMethodProxy(new addAccountExplicitlyWithVisibility());
 		addMethodProxy(new removeAccount());
 		addMethodProxy(new removeAccountAsUser());
 		addMethodProxy(new removeAccountExplicitly());
@@ -62,6 +66,15 @@ public class AccountManagerStub extends BinderInvocationProxy {
 		addMethodProxy(new renameAccount());
 		addMethodProxy(new getPreviousName());
 		addMethodProxy(new renameSharedAccountAsUser());
+		addMethodProxy(new confirmCredentials());
+		addMethodProxy(new getPackagesAndVisibilityForAccount());
+		addMethodProxy(new confirmCredentials());
+		addMethodProxy(new getPackagesAndVisibilityForAccount());
+		addMethodProxy(new setAccountVisibility());
+		addMethodProxy(new getAccountVisibility());
+		addMethodProxy(new getAccountsAndVisibilityForPackage());
+		addMethodProxy(new registerAccountListener());
+		addMethodProxy(new unregisterAccountListener());
 	}
 
 	private static class getPassword extends MethodProxy {
@@ -200,6 +213,25 @@ public class AccountManagerStub extends BinderInvocationProxy {
 			String password = (String) args[1];
 			Bundle extras = (Bundle) args[2];
 			return Mgr.addAccountExplicitly(account, password, extras);
+		}
+	}
+
+	private static class addAccountExplicitlyWithVisibility extends MethodProxy {
+		@Override
+		public String getMethodName() {
+			return "addAccountExplicitlyWithVisibility";
+		}
+
+		@Override
+		public Object call(Object who, Method method, Object... args) throws Throwable {
+			if (args != null && args.length >= 4 && args[0] instanceof Account) {
+				Account account = (Account) args[0];
+				String password = (String) args[1];
+				Bundle extras = (Bundle) args[2];
+				Map visibility = (Map) args[3];
+				return Mgr.addAccountExplicitlyWithVisibility(account, password, extras, visibility);
+			}
+			return method.invoke(who, args);
 		}
 	}
 
@@ -477,7 +509,23 @@ public class AccountManagerStub extends BinderInvocationProxy {
 			boolean expectActivityLaunch = (boolean) args[3];
 			Mgr.confirmCredentials(response, account, options, expectActivityLaunch);
 			return 0;
+		}
+	}
 
+	private static class confirmCredentials extends MethodProxy {
+		@Override
+		public String getMethodName() {
+			return "confirmCredentials";
+		}
+
+		@Override
+		public Object call(Object who, Method method, Object... args) throws Throwable {
+			IAccountManagerResponse response = (IAccountManagerResponse) args[0];
+			Account account = (Account) args[1];
+			Bundle options = (Bundle) args[2];
+			boolean expectActivityLaunch = (boolean) args[3];
+			Mgr.confirmCredentials(response, account, options, expectActivityLaunch);
+			return 0;
 		}
 	}
 
@@ -591,6 +639,103 @@ public class AccountManagerStub extends BinderInvocationProxy {
 			Account accountToRename = (Account) args[0];
 			String newName = (String) args[1];
 			int userId = (int) args[2];
+			return method.invoke(who, args);
+		}
+	}
+
+	private static class getPackagesAndVisibilityForAccount extends MethodProxy {
+		@Override
+		public String getMethodName() {
+			return "getPackagesAndVisibilityForAccount";
+		}
+
+		@Override
+		public Object call(Object who, Method method, Object... args) throws Throwable {
+			Account account = (Account) args[0];
+			return Mgr.getPackagesAndVisibilityForAccount(account);
+		}
+	}
+
+	private static class setAccountVisibility extends MethodProxy {
+		@Override
+		public String getMethodName() {
+			return "setAccountVisibility";
+		}
+
+		@Override
+		public Object call(Object who, Method method, Object... args) throws Throwable {
+			if (args != null && args.length >= 3 && args[0] instanceof Account) {
+				Account account = (Account) args[0];
+				String packageName = (String) args[1];
+				int newVisibility = (Integer) args[2];
+				return Mgr.setAccountVisibility(account, packageName, newVisibility);
+			}
+			return method.invoke(who, args);
+		}
+	}
+
+	private static class getAccountVisibility extends MethodProxy {
+		@Override
+		public String getMethodName() {
+			return "getAccountVisibility";
+		}
+
+		@Override
+		public Object call(Object who, Method method, Object... args) throws Throwable {
+			if (args != null && args.length >= 2 && args[0] instanceof Account) {
+				Account account = (Account) args[0];
+				String packageName = (String) args[1];
+				return Mgr.getAccountVisibility(account, packageName);
+			}
+			return method.invoke(who, args);
+		}
+	}
+
+	private static class getAccountsAndVisibilityForPackage extends MethodProxy {
+		@Override
+		public String getMethodName() {
+			return "getAccountsAndVisibilityForPackage";
+		}
+
+		@Override
+		public Object call(Object who, Method method, Object... args) throws Throwable {
+			if (args != null && args.length >= 2 && args[0] instanceof String) {
+				String packageName = (String)args[0];
+				String accountType = (String)args[1];
+				return Mgr.getAccountsAndVisibilityForPackage(packageName, accountType);
+			}
+			return method.invoke(who, args);
+		}
+	}
+
+	private static class registerAccountListener extends MethodProxy {
+		@Override
+		public String getMethodName() {
+			return "registerAccountListener";
+		}
+
+		@Override
+		public Object call(Object who, Method method, Object... args) throws Throwable {
+			if (args != null && args.length != 0 && (args[args.length - 1] instanceof String)) {
+				final String pkgName = (String) args[args.length - 1];
+				args[args.length - 1] = VirtualCore.get().getHostPkg();
+			}
+			return method.invoke(who, args);
+		}
+	}
+
+	private static class unregisterAccountListener extends MethodProxy {
+		@Override
+		public String getMethodName() {
+			return "unregisterAccountListener";
+		}
+
+		@Override
+		public Object call(Object who, Method method, Object... args) throws Throwable {
+			if (args != null && args.length != 0 && (args[args.length - 1] instanceof String)) {
+				final String pkgName = (String) args[args.length - 1];
+				args[args.length - 1] = VirtualCore.get().getHostPkg();
+			}
 			return method.invoke(who, args);
 		}
 	}

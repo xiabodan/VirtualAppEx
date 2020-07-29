@@ -163,6 +163,10 @@ public final class VirtualCore {
         return context.getPackageManager();
     }
 
+    public int getMasterTargetSdk() {
+        return context.getApplicationInfo().targetSdkVersion;
+    }
+
     public String getHostPkg() {
         return hostPkgName;
     }

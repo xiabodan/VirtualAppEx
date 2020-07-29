@@ -49,7 +49,7 @@ import java.util.List;
  */
 public class VUserManagerService implements IUserManager {
 
-    private static final String LOG_TAG = "VUserManagerService";
+    private static final String LOG_TAG = "VUMS";
 
     private static final boolean DBG = false;
 

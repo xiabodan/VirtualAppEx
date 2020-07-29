@@ -6,6 +6,8 @@ import android.accounts.IAccountManagerResponse;
 import android.os.Bundle;
 import android.os.RemoteException;
 
+import java.util.Map;
+
 /**
  * @author Lody
  */
@@ -45,6 +47,8 @@ public interface IAccountManager {
 
     boolean addAccountExplicitly(int userId, Account account, String password, Bundle extras) throws RemoteException;
 
+    boolean addAccountExplicitlyWithVisibility(int userId, Account account, String password, Bundle extras, Map packageToVisibility) throws RemoteException;
+
     boolean removeAccountExplicitly(int userId, Account account) throws RemoteException;
 
     void renameAccount(int userId, IAccountManagerResponse response, Account accountToRename, String newName) throws RemoteException;
@@ -58,4 +62,12 @@ public interface IAccountManager {
     void invalidateAuthToken(int userId, String accountType, String authToken) throws RemoteException;
 
     String peekAuthToken(int userId, Account account, String authTokenType) throws RemoteException;
+
+    Map getPackagesAndVisibilityForAccount(int userId, Account account) throws RemoteException;
+
+    boolean setAccountVisibility(int userId, Account account, String packageName, int newVisibility) throws RemoteException;
+
+    int getAccountVisibility(int userId, Account account, String packageName) throws RemoteException;
+
+    Map getAccountsAndVisibilityForPackage(int userId, String packageName, String accountType) throws RemoteException;
 }

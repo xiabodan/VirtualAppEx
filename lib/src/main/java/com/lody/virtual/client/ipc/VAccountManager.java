@@ -1,6 +1,7 @@
 package com.lody.virtual.client.ipc;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorDescription;
@@ -15,6 +16,8 @@ import com.lody.virtual.client.stub.AmsTask;
 import com.lody.virtual.helper.ipcbus.IPCSingleton;
 import com.lody.virtual.os.VUserHandle;
 import com.lody.virtual.server.interfaces.IAccountManager;
+
+import java.util.Map;
 
 import static com.lody.virtual.helper.compat.AccountManagerCompat.KEY_ANDROID_PACKAGE_NAME;
 
@@ -63,6 +66,14 @@ public class VAccountManager {
     public boolean addAccountExplicitly(Account account, String password, Bundle extras) {
         try {
             return getService().addAccountExplicitly(VUserHandle.myUserId(), account, password, extras);
+        } catch (RemoteException e) {
+            return VirtualRuntime.crash(e);
+        }
+    }
+
+    public boolean addAccountExplicitlyWithVisibility(Account account, String password, Bundle extras, Map packageToVisibility) {
+        try {
+            return getService().addAccountExplicitlyWithVisibility(VUserHandle.myUserId(), account, password, extras, packageToVisibility);
         } catch (RemoteException e) {
             return VirtualRuntime.crash(e);
         }
@@ -272,5 +283,39 @@ public class VAccountManager {
                         requiredFeatures, activity != null, optionsIn);
             }
         }.start();
+    }
+
+    public Map getPackagesAndVisibilityForAccount(Account account) {
+        try {
+            return getService().getPackagesAndVisibilityForAccount(VUserHandle.myUserId(), account);
+        } catch (RemoteException e) {
+            return VirtualRuntime.crash(e);
+        }
+    }
+
+    public boolean setAccountVisibility(Account account, String packageName, int newVisibility) {
+        try {
+            return getService().setAccountVisibility(VUserHandle.myUserId(), account, packageName, newVisibility);
+        } catch (RemoteException e) {
+            return VirtualRuntime.crash(e);
+        }
+    }
+
+    public int getAccountVisibility(Account account, String packageName) {
+        try {
+            return getService().getAccountVisibility(VUserHandle.myUserId(), account, packageName);
+        } catch (RemoteException e) {
+            return VirtualRuntime.crash(e);
+        } finally {
+            return AccountManager.VISIBILITY_UNDEFINED;
+        }
+    }
+
+    public Map getAccountsAndVisibilityForPackage(String packageName, String accountType) {
+        try {
+            return getService().getAccountsAndVisibilityForPackage(VUserHandle.myUserId(), packageName, accountType);
+        } catch (RemoteException e) {
+            return VirtualRuntime.crash(e);
+        }
     }
 }

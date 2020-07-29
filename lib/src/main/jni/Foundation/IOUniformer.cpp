@@ -604,15 +604,14 @@ void IOUniformer::startUniformer(const char *so_path, int api_level, int preview
         Dl_info info;
         if (dladdr((void*) open, &info)) {
             void* base = info.dli_fbase;
-            ALOGD("inline hook addr base %p", base);
+            ALOGD("inline hook libc addr base %p", base);
             if (base != nullptr) {
-                ALOGD("inline hook addr %p", base);
                 MSHookFunction((void *) ((long)base + 0xCEEB0), (void *)new___openat, (void **) &orig___openat);
                 MSHookFunction((void *) ((long)base + 0xCF070), (void *)new___statfs, (void **) &orig___statfs);
             }
         }
 
-        HOOK_SYMBOL(handle, execve);
+        // HOOK_SYMBOL(handle, execve);
         dlclose(handle);
     }
 #endif

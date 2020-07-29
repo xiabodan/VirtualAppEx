@@ -1,9 +1,12 @@
 package com.lody.virtual.server.notification;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.os.Build;
 import android.text.TextUtils;
 
+import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.helper.utils.VLog;
 import com.lody.virtual.server.interfaces.INotificationManager;
 
@@ -11,8 +14,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.zip.CheckedOutputStream;
 
 public class VNotificationManagerService implements INotificationManager {
+    private static final String VA_DEFAULT_CHANNEL_ID = "va_miscellaneous";
+    private static final String VA_DEFAULT_CHANNEL_NAME = "Default Channel";
+
     private static final AtomicReference<VNotificationManagerService> gService = new AtomicReference<>();
     private NotificationManager mNotificationManager;
     static final String TAG = NotificationCompat.class.getSimpleName();
@@ -24,6 +31,7 @@ public class VNotificationManagerService implements INotificationManager {
     private VNotificationManagerService(Context context) {
         mContext = context;
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        registerDefaultChannelIfNeeded(context);
     }
 
     public static void systemReady(Context context) {
@@ -150,4 +158,21 @@ public class VNotificationManagerService implements INotificationManager {
         }
     }
 
+    public static void registerDefaultChannelIfNeeded(Context context) {
+        if (context == null) {
+            throw new IllegalArgumentException("context == null");
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
+        }
+        final NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager == null || VirtualCore.get().getMasterTargetSdk() < Build.VERSION_CODES.O) {
+            return;
+        }
+        if (notificationManager.getNotificationChannel(VA_DEFAULT_CHANNEL_ID) == null) {
+            final NotificationChannel defaultChannel = new NotificationChannel(VA_DEFAULT_CHANNEL_ID,
+                    VA_DEFAULT_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(defaultChannel);
+        }
+    }
 }

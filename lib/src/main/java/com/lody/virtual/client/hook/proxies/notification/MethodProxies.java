@@ -198,7 +198,20 @@ class MethodProxies {
 
         @Override
         public Object call(Object who, Method method, Object... args) throws Throwable {
-            args[0] = VirtualCore.get().getHostPkg();
+            MethodParameterUtils.replaceFirstAppPkg(args);
+            return method.invoke(who,args);
+        }
+    }
+
+    static class  shouldInterceptSound extends MethodProxy {
+        @Override
+        public String getMethodName() {
+            return "shouldInterceptSound";
+        }
+
+        @Override
+        public Object call(Object who, Method method, Object... args) throws Throwable {
+            MethodParameterUtils.replaceFirstAppPkg(args);
             return method.invoke(who,args);
         }
     }
@@ -302,7 +315,7 @@ class MethodProxies {
 
         @Override
         public Object call(Object who, Method method, Object... args) throws Throwable {
-            args[0] = VirtualCore.get().getHostPkg();
+            MethodParameterUtils.replaceFirstAppPkg(args);
             return method.invoke(who,args);
         }
     }
@@ -320,10 +333,6 @@ class MethodProxies {
         }
     }
 
-
-
-
-
     static class GetAppActiveNotifications extends MethodProxy {
         @Override
         public String getMethodName() {
@@ -336,7 +345,6 @@ class MethodProxies {
             return method.invoke(who,args);
         }
     }
-
 
     static class SetNotificationPolicyAccessGranted extends MethodProxy {
         @Override
@@ -351,7 +359,6 @@ class MethodProxies {
         }
     }
 
-
     static class RemoveAutomaticZenRules extends MethodProxy {
         @Override
         public String getMethodName() {
@@ -365,8 +372,6 @@ class MethodProxies {
         }
     }
 
-
-
     static class SetNotificationPolicy extends MethodProxy {
         @Override
         public String getMethodName() {
@@ -375,11 +380,10 @@ class MethodProxies {
 
         @Override
         public Object call(Object who, Method method, Object... args) throws Throwable {
-            args[0] = VirtualCore.get().getHostPkg();
+            MethodParameterUtils.replaceFirstAppPkg(args);
             return method.invoke(who,args);
         }
     }
-
 
     static class NotifyConditions extends MethodProxy {
         @Override
@@ -393,7 +397,6 @@ class MethodProxies {
             return method.invoke(who,args);
         }
     }
-
 
     static class GetNotificationChannelGroupsFromPrivilegedListener extends MethodProxy {
         @Override
@@ -421,7 +424,6 @@ class MethodProxies {
         }
     }
 
-
     static class  UpdateNotificationChannelFromPrivilegedListener extends MethodProxy {
         @Override
         public String getMethodName() {
@@ -434,7 +436,6 @@ class MethodProxies {
             return method.invoke(who,args);
         }
     }
-
 
     static class  GetNotificationChannelGroupsForPackage extends MethodProxy {
         @Override
@@ -462,7 +463,6 @@ class MethodProxies {
         }
     }
 
-
     static class  GetNotificationChannel extends MethodProxy {
         @Override
         public String getMethodName() {
@@ -471,13 +471,10 @@ class MethodProxies {
 
         @Override
         public Object call(Object who, Method method, Object... args) throws Throwable {
-            args[0] = VirtualCore.get().getHostPkg();
+            MethodParameterUtils.replaceFirstAppPkg(args);
             return method.invoke(who,args);
         }
     }
-
-
-
 
     static class  GetNotificationChannelsForPackage extends MethodProxy {
         @Override
@@ -492,7 +489,6 @@ class MethodProxies {
         }
     }
 
-
     static class  GetActiveNotificationsFromListener extends MethodProxy {
         @Override
         public String getMethodName() {
@@ -506,8 +502,6 @@ class MethodProxies {
         }
     }
 
-
-
     static class  GetNumNotificationChannelsForPackage extends MethodProxy {
         @Override
         public String getMethodName() {
@@ -520,7 +514,6 @@ class MethodProxies {
             return method.invoke(who,args);
         }
     }
-
 
     static class  DeleteNotificationChannel extends MethodProxy {
         @Override
@@ -561,7 +554,6 @@ class MethodProxies {
             return method.invoke(who,args);
         }
     }
-
 
     static class  EnqueueToast extends MethodProxy {
         @Override
@@ -623,7 +615,20 @@ class MethodProxies {
 
         @Override
         public Object call(Object who, Method method, Object... args) throws Throwable {
-            args[0] = VirtualCore.get().getHostPkg();
+            MethodParameterUtils.replaceFirstAppPkg(args);
+            return method.invoke(who,args);
+        }
+    }
+
+    static class  removeEdgeNotification extends MethodProxy {
+        @Override
+        public String getMethodName() {
+            return "removeEdgeNotification";
+        }
+
+        @Override
+        public Object call(Object who, Method method, Object... args) throws Throwable {
+            MethodParameterUtils.replaceFirstAppPkg(args);
             return method.invoke(who,args);
         }
     }
@@ -636,7 +641,7 @@ class MethodProxies {
 
         @Override
         public Object call(Object who, Method method, Object... args) throws Throwable {
-            args[0] = VirtualCore.get().getHostPkg();
+            MethodParameterUtils.replaceFirstAppPkg(args);
             return method.invoke(who,args);
         }
     }
@@ -690,7 +695,7 @@ class MethodProxies {
 
         @Override
         public Object call(Object who, Method method, Object... args) throws Throwable {
-            args[0] = VirtualCore.get().getHostPkg();
+            MethodParameterUtils.replaceFirstAppPkg(args);
             return method.invoke(who,args);
         }
     }
