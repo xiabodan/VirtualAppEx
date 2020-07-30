@@ -1,16 +1,31 @@
 package com.lody.virtual.client.hook.proxies.notification;
 
+import android.annotation.TargetApi;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationChannelGroup;
 import android.os.Build;
+import android.os.UserHandle;
 
+import com.lody.virtual.client.VClientImpl;
 import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.client.hook.base.MethodProxy;
+import com.lody.virtual.client.hook.base.StaticMethodProxy;
 import com.lody.virtual.client.hook.utils.MethodParameterUtils;
 import com.lody.virtual.client.ipc.VNotificationManager;
 import com.lody.virtual.helper.utils.ArrayUtils;
 import com.lody.virtual.helper.utils.VLog;
+import com.lody.virtual.os.VUserHandle;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import mirror.android.content.pm.ParceledListSlice;
 
 /**
  * @author Lody
@@ -229,19 +244,6 @@ class MethodProxies {
         }
     }
 
-    static class  CreateNotificationChannels extends MethodProxy {
-        @Override
-        public String getMethodName() {
-            return "createNotificationChannels";
-        }
-
-        @Override
-        public Object call(Object who, Method method, Object... args) throws Throwable {
-            args[0] = VirtualCore.get().getHostPkg();
-            return method.invoke(who,args);
-        }
-    }
-
     static class OnlyHasDefaultChannel extends MethodProxy {
         @Override
         public String getMethodName() {
@@ -450,19 +452,6 @@ class MethodProxies {
         }
     }
 
-    static class  GetNotificationChannels extends MethodProxy {
-        @Override
-        public String getMethodName() {
-            return "getNotificationChannels";
-        }
-
-        @Override
-        public Object call(Object who, Method method, Object... args) throws Throwable {
-            args[0] = VirtualCore.get().getHostPkg();
-            return method.invoke(who,args);
-        }
-    }
-
     static class  GetNotificationChannel extends MethodProxy {
         @Override
         public String getMethodName() {
@@ -472,6 +461,9 @@ class MethodProxies {
         @Override
         public Object call(Object who, Method method, Object... args) throws Throwable {
             MethodParameterUtils.replaceFirstAppPkg(args);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                args[2] = VirtualCore.get().getHostPkg();
+            }
             return method.invoke(who,args);
         }
     }
@@ -540,7 +532,6 @@ class MethodProxies {
             return method.invoke(who,args);
         }
     }
-
 
     static class  ClearData extends MethodProxy {
         @Override
@@ -672,7 +663,6 @@ class MethodProxies {
         }
     }
 
-
     static class  GetDeletedChannelCount extends MethodProxy {
         @Override
         public String getMethodName() {
@@ -686,8 +676,57 @@ class MethodProxies {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.O)
+    static class  getNotificationChannelGroup extends MethodProxy {
+        ThreadLocal<String> mPackageName = new ThreadLocal<String>();
 
-    static class  GetNotificationChannelGroups extends MethodProxy {
+        @Override
+        public String getMethodName() {
+            return "getNotificationChannelGroup";
+        }
+
+        @Override
+        public Object call(Object who, Method method, Object... args) throws Throwable {
+            mPackageName.set(null);
+            final int index = MethodParameterUtils.findFirstObjectIndexForClassInArgs(args, String.class, 0);
+            if (index >= 0) {
+                String pkg = (String) args[index];
+                mPackageName.set(pkg);
+                args[index] = VirtualCore.get().getHostPkg();
+            }
+            // MethodParameterUtils.replaceFirstAppPkg(args);
+            return method.invoke(who,args);
+        }
+
+        @Override
+        public Object afterCall(Object who, Method method, Object[] args, Object result) throws Throwable {
+            final int userId = VUserHandle.getUserId(VClientImpl.get().getVUid());
+            if ((result instanceof NotificationChannelGroup)) {
+                List<String> channelIds = VNotificationManager.get().getNotificationChannels(mPackageName.get(), userId);
+                if (channelIds == null) {
+                    return null;
+                } else {
+                    VLog.v(TAG, "getNotificationChannelGroup channelIds " + Arrays.toString(channelIds.toArray()));
+                    Set<String> channelIdsSet = new HashSet<>(channelIds);
+                    final NotificationChannelGroup group = (NotificationChannelGroup) result;
+                    final List<NotificationChannel> channels = group.getChannels();
+                    Iterator<NotificationChannel> iterator1 = channels.iterator();
+                    while (iterator1.hasNext()) {
+                        NotificationChannel channel = iterator1.next();
+                        if (!channelIdsSet.contains(channel.getId())) {
+                            iterator1.remove();
+                        }
+                    }
+                }
+            }
+            return super.afterCall(who, method, args, result);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    static class  getNotificationChannelGroups extends MethodProxy {
+        ThreadLocal<String> mPackageName = new ThreadLocal<String>();
+
         @Override
         public String getMethodName() {
             return "getNotificationChannelGroups";
@@ -695,8 +734,122 @@ class MethodProxies {
 
         @Override
         public Object call(Object who, Method method, Object... args) throws Throwable {
+            mPackageName.set(null);
+            final int index = MethodParameterUtils.findFirstObjectIndexForClassInArgs(args, String.class, 0);
+            if (index >= 0) {
+                String pkg = (String) args[index];
+                mPackageName.set(pkg);
+                args[index] = VirtualCore.get().getHostPkg();
+            }
+            return method.invoke(who,args);
+        }
+
+        @Override
+        public Object afterCall(Object who, Method method, Object[] args, Object result) throws Throwable {
+            final int userId = VUserHandle.getUserId(VClientImpl.get().getVUid());
+            if (ParceledListSlice.isInstance(result)) {
+                List<String> channelIds = VNotificationManager.get().getNotificationChannels(mPackageName.get(), userId);
+                if (channelIds == null) {
+                    return MethodParameterUtils.convertListToParceledListSliceIfNeeded(method, Collections.emptyList());
+                } else {
+                    VLog.v(TAG, "getNotificationChannelGroups channelIds " + Arrays.toString(channelIds.toArray()));
+                    Set<String> channelIdsSet = new HashSet<>(channelIds);
+                    final List<NotificationChannelGroup> groups = ParceledListSlice.getList(result);
+                    Iterator<NotificationChannelGroup> iterator = groups.iterator();
+                    while (iterator.hasNext()) {
+                        NotificationChannelGroup group = iterator.next();
+                        final List<NotificationChannel> channels = group.getChannels();
+                        Iterator<NotificationChannel> iterator1 = channels.iterator();
+                        while (iterator1.hasNext()) {
+                            NotificationChannel channel = iterator1.next();
+                            if (!channelIdsSet.contains(channel.getId())) {
+                                iterator1.remove();
+                            }
+                        }
+                    }
+                }
+            }
+            return super.afterCall(who, method, args, result);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    static class  createNotificationChannels extends MethodProxy {
+        @Override
+        public String getMethodName() {
+            return "createNotificationChannels";
+        }
+
+        @Override
+        public Object call(Object who, Method method, Object... args) throws Throwable {
             MethodParameterUtils.replaceFirstAppPkg(args);
             return method.invoke(who,args);
+        }
+
+        @Override
+        public boolean beforeCall(Object who, Method method, Object... args) {
+            final int packageNameIndex = MethodParameterUtils.findFirstObjectIndexForClassInArgs(args, String.class, 0);
+            if (packageNameIndex >= 0) {
+                final String packageName = (String) args[packageNameIndex];
+                final int userId = VUserHandle.getUserId(VClientImpl.get().getVUid());
+                final int channelsIndex = 1;
+                if (args[channelsIndex] != null && ParceledListSlice.isInstance(args[channelsIndex])) {
+                    final List<NotificationChannel> channels = ParceledListSlice.getList(args[channelsIndex]);
+                    for (NotificationChannel notificationChannel : channels) {
+                        VNotificationManager.get().createNotificationChannel(packageName, userId, notificationChannel.getId());
+                        VLog.v(TAG, "createNotificationChannels: " + notificationChannel);
+                    }
+                }
+            }
+            return super.beforeCall(who, method, args);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    static class  getNotificationChannels extends MethodProxy {
+        ThreadLocal<String> mPackageName = new ThreadLocal<String>();
+
+        @Override
+        public String getMethodName() {
+            return "getNotificationChannels";
+        }
+
+        @Override
+        public Object call(Object who, Method method, Object... args) throws Throwable {
+            mPackageName.set(null);
+            final int index = MethodParameterUtils.findFirstObjectIndexForClassInArgs(args, String.class, 0);
+            if (index >= 0) {
+                String pkg = (String) args[index];
+                mPackageName.set(pkg);
+                args[index] = VirtualCore.get().getHostPkg();
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                args[1] = VirtualCore.get().getHostPkg();
+            }
+            return method.invoke(who,args);
+        }
+
+        @Override
+        public Object afterCall(Object who, Method method, Object[] args, Object result) throws Throwable {
+            final int userId = VUserHandle.getUserId(VClientImpl.get().getVUid());
+            if (ParceledListSlice.isInstance(result)) {
+                List<String> channelIds = VNotificationManager.get().getNotificationChannels(mPackageName.get(), userId);
+                if (channelIds == null) {
+                    return MethodParameterUtils.convertListToParceledListSliceIfNeeded(method, Collections.emptyList());
+                } else {
+                    VLog.v(TAG, "getNotificationChannels channelIds " + Arrays.toString(channelIds.toArray()));
+                    Set<String> channelIdsSet = new HashSet<>(channelIds);
+                    final List<NotificationChannel> channels = ParceledListSlice.getList(result);
+                    Iterator<NotificationChannel> iterator = channels.iterator();
+                    while (iterator.hasNext()) {
+                        NotificationChannel channel = iterator.next();
+                        if (!channelIdsSet.contains(channel.getId())) {
+                            iterator.remove();
+                        }
+                    }
+                }
+            }
+            return super.afterCall(who, method, args, result);
         }
     }
 }

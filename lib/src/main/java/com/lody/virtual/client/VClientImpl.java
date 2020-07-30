@@ -262,7 +262,8 @@ public final class VClientImpl extends IVClient.Stub {
         data.appInfo = VPackageManager.get().getApplicationInfo(packageName, 0, getUserId(vuid));
         data.processName = processName;
         data.providers = VPackageManager.get().queryContentProviders(processName, getVUid(), PackageManager.GET_META_DATA);
-        Log.i(TAG, "Binding application " + data.appInfo.packageName + " (" + data.processName + ")");
+        Log.i(TAG, "bindApplicationNoCheck " + data.appInfo.packageName + " (" + data.processName + ")");
+        Log.v(TAG, "bindApplicationNoCheck vuid " + getVUid() + ", baseVuid " + getBaseVUid() + ", uid " + getUserId(getVUid()));
         mBoundApplication = data;
         VirtualRuntime.setupRuntime(data.processName, data.appInfo);
         int targetSdkVersion = data.appInfo.targetSdkVersion;

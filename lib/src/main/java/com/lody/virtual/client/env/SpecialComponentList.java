@@ -60,6 +60,7 @@ public final class SpecialComponentList {
         WHITE_PERMISSION.add("com.google.android.gms.settings.SECURITY_SETTINGS");
         WHITE_PERMISSION.add("com.google.android.apps.plus.PRIVACY_SETTINGS");
         WHITE_PERMISSION.add(Manifest.permission.ACCOUNT_MANAGER);
+        WHITE_PERMISSION.add("android.permission.BACKUP");
 
         PROTECTED_ACTION_MAP.put(Intent.ACTION_PACKAGE_ADDED, Constants.ACTION_PACKAGE_ADDED);
         PROTECTED_ACTION_MAP.put(Intent.ACTION_PACKAGE_REMOVED, Constants.ACTION_PACKAGE_REMOVED);

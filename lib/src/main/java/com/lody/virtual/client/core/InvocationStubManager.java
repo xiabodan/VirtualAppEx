@@ -19,6 +19,7 @@ import com.lody.virtual.client.hook.proxies.clipboard.ClipBoardStub;
 import com.lody.virtual.client.hook.proxies.connectivity.ConnectivityStub;
 import com.lody.virtual.client.hook.proxies.content.ContentServiceStub;
 import com.lody.virtual.client.hook.proxies.context_hub.ContextHubServiceStub;
+import com.lody.virtual.client.hook.proxies.crossprofile.ICrossProfileAppsStub;
 import com.lody.virtual.client.hook.proxies.devicepolicy.DevicePolicyManagerStub;
 import com.lody.virtual.client.hook.proxies.display.DisplayStub;
 import com.lody.virtual.client.hook.proxies.dropbox.DropBoxManagerStub;
@@ -182,8 +183,9 @@ public final class InvocationStubManager {
                 addInjector(new ShortcutServiceStub());
                 addInjector(new DevicePolicyManagerStub());
             }
-            if (Build.VERSION.SDK_INT >= 26) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 				addInjector(new AutoFillManagerStub());
+				addInjector(new ICrossProfileAppsStub());
 			}
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 				addInjector(new ActivityTaskManagerStub());

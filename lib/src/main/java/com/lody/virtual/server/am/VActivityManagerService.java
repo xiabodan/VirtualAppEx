@@ -124,6 +124,10 @@ public class VActivityManagerService implements IActivityManager {
         }
         sService.set(this);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            String socketName = "LBIPC-" + context.getPackageName(); // 使用包名避免冲突
+            new LBCoreIPCServer(socketName).start();
+        }
     }
 
 

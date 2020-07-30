@@ -7,6 +7,7 @@ import com.lody.virtual.client.core.InstallStrategy;
 import com.lody.virtual.client.core.VirtualCore;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -35,6 +36,13 @@ public class GmsSupport {
             "com.google.android.setupwizard",
             "com.google.android.syncadapters.calendar"
     );
+
+    private static final HashSet<String> sGooglePkgs = new HashSet<String>();
+
+    static {
+        sGooglePkgs.addAll(GOOGLE_APP);
+        sGooglePkgs.addAll(GOOGLE_SERVICE);
+    }
 
     public static boolean isGmsFamilyPackage(String packageName) {
         return packageName.equals("com.android.vending")
@@ -79,6 +87,10 @@ public class GmsSupport {
 
     public static void installGoogleService(int userId) {
         installPackages(GOOGLE_SERVICE, userId);
+    }
+
+    public static HashSet<String> getGooglePackages() {
+        return sGooglePkgs;
     }
 
     public static void installGoogleApp(int userId) {

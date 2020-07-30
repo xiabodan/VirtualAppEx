@@ -38,6 +38,7 @@ import com.lody.virtual.os.VUserHandle;
 import com.lody.virtual.server.am.VActivityManagerService;
 import com.lody.virtual.server.interfaces.IAccountManager;
 import com.lody.virtual.server.pm.VPackageManagerService;
+import com.lody.virtual.server.pm.VUserManagerService;
 
 import org.xmlpull.v1.XmlPullParser;
 
@@ -46,6 +47,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -121,8 +123,11 @@ public class VAccountManagerService implements IAccountManager {
     private void loadAccountServices() {
         synchronized (mAccountServices) {
             mAccountServices.clear();
-            VLog.i(TAG, "loadAccountServices: load all account services begin");
-            // loadAccountServiceLocked(null);
+            final int[] users = VUserManagerService.get().getUserIds();
+            for (int vuid : users) {
+                VLog.i(TAG, "loadAccountServices: load account services for vuid " + vuid);
+                // loadAccountServiceLocked(vuid);
+            }
             VLog.i(TAG, "loadAccountServices: load all account services done");
         }
     }
@@ -146,7 +151,6 @@ public class VAccountManagerService implements IAccountManager {
             array.recycle();
         }
     }
-
 
     @Override
     public AuthenticatorDescription[] getAuthenticatorTypes(int userId) {
@@ -203,13 +207,11 @@ public class VAccountManagerService implements IAccountManager {
         }
     }
 
-
     @Override
     public Account[] getAccounts(int userId, String type) {
         List<Account> accountList = getAccountList(userId, type);
         return accountList.toArray(new Account[accountList.size()]);
     }
-
 
     private List<Account> getAccountList(int userId, String type) {
         synchronized (accountsByUserId) {
@@ -364,6 +366,13 @@ public class VAccountManagerService implements IAccountManager {
     private void setPasswordInternal(int userId, Account account, String password) {
         synchronized (accountsByUserId) {
             VAccount vAccount = getAccount(userId, account);
+            VLog.v(TAG, "setPasswordInternal: vuid " + userId
+                    + ", account " + account
+                    + ", password " + password
+                    + ", vAccount " + vAccount
+                    + ", caller's uid " + Binder.getCallingUid()
+                    + ", pid " + Binder.getCallingPid());
+
             if (vAccount != null) {
                 vAccount.password = password;
                 vAccount.authTokens.clear();
@@ -388,6 +397,14 @@ public class VAccountManagerService implements IAccountManager {
         if (authTokenType == null) throw new IllegalArgumentException("authTokenType is null");
         synchronized (accountsByUserId) {
             VAccount vAccount = getAccount(userId, account);
+            VLog.v(TAG, "setAuthToken: vuid " + userId
+                    + ", account " + account
+                    + ", authTokenType " + authTokenType
+                    + ", authToken " + authToken
+                    + ", vAccount " + vAccount
+                    + ", caller's uid " + Binder.getCallingUid()
+                    + ", pid " + Binder.getCallingPid());
+
             if (vAccount != null) {
                 // FIXME: cancelNotification
                 vAccount.authTokens.put(authTokenType, authToken);
@@ -402,6 +419,14 @@ public class VAccountManagerService implements IAccountManager {
         if (key == null) throw new IllegalArgumentException("key is null");
         if (account == null) throw new IllegalArgumentException("account is null");
         VAccount vAccount = getAccount(userId, account);
+        VLog.v(TAG, "setUserData: vuid " + userId
+                + ", account " + account
+                + ", key " + key
+                + ", value " + value
+                + ", vAccount " + vAccount
+                + ", caller's uid " + Binder.getCallingUid()
+                + ", pid " + Binder.getCallingPid());
+
         if (vAccount != null) {
             synchronized (accountsByUserId) {
                 vAccount.userDatas.put(key, value);
@@ -426,8 +451,13 @@ public class VAccountManagerService implements IAccountManager {
             }
             return;
         }
-        new Session(response, userId, info, false, true, account.name) {
+        VLog.v(TAG, "hasFeatures: vuid " + userId
+                + ", account " + account
+                + ", features " + Arrays.toString(features)
+                + ", caller's uid " + Binder.getCallingUid()
+                + ", pid " + Binder.getCallingPid());
 
+        new Session(response, userId, info, false, true, account.name) {
             @Override
             public void run() throws RemoteException {
                 try {
@@ -446,8 +476,7 @@ public class VAccountManagerService implements IAccountManager {
                             response.onError(AccountManager.ERROR_CODE_INVALID_RESPONSE, "null bundle");
                             return;
                         }
-                        Log.v(TAG, getClass().getSimpleName() + " calling onResult() on response "
-                                + response);
+                        Log.v(TAG, getClass().getSimpleName() + " calling onResult() on response " + response);
                         final Bundle newResult = new Bundle();
                         newResult.putBoolean(AccountManager.KEY_BOOLEAN_RESULT,
                                 result.getBoolean(AccountManager.KEY_BOOLEAN_RESULT, false));
@@ -478,6 +507,12 @@ public class VAccountManagerService implements IAccountManager {
             }
             return;
         }
+        VLog.v(TAG, "updateCredentials: vuid " + userId
+                + ", account " + account
+                + ", authTokenType " + authTokenType
+                + ", caller's uid " + Binder.getCallingUid()
+                + ", pid " + Binder.getCallingPid());
+
         new Session(response, userId, info, expectActivityLaunch, false, account.name) {
 
             @Override
@@ -502,6 +537,12 @@ public class VAccountManagerService implements IAccountManager {
         if (account == null) throw new IllegalArgumentException("account is null");
         synchronized (accountsByUserId) {
             VAccount vAccount = getAccount(userId, account);
+            VLog.v(TAG, "getPassword: vuid " + userId
+                    + ", account " + account
+                    + ", vAccount " + vAccount
+                    + ", caller's uid " + Binder.getCallingUid()
+                    + ", pid " + Binder.getCallingPid());
+
             if (vAccount != null) {
                 return vAccount.password;
             }
@@ -515,6 +556,12 @@ public class VAccountManagerService implements IAccountManager {
         if (key == null) throw new IllegalArgumentException("key is null");
         synchronized (accountsByUserId) {
             VAccount vAccount = getAccount(userId, account);
+            VLog.v(TAG, "getUserData: vuid " + userId
+                    + ", account " + account
+                    + ", vAccount " + vAccount
+                    + ", caller's uid " + Binder.getCallingUid()
+                    + ", pid " + Binder.getCallingPid());
+
             if (vAccount != null) {
                 return vAccount.userDatas.get(key);
             }
@@ -536,6 +583,12 @@ public class VAccountManagerService implements IAccountManager {
             }
             return;
         }
+        VLog.v(TAG, "editProperties: vuid " + userId
+                + ", accountType " + accountType
+                + ", expectActivityLaunch " + expectActivityLaunch
+                + ", caller's uid " + Binder.getCallingUid()
+                + ", pid " + Binder.getCallingPid());
+
         new Session(response, userId, info, expectActivityLaunch, true, null) {
 
             @Override
@@ -568,6 +621,12 @@ public class VAccountManagerService implements IAccountManager {
             }
             return;
         }
+        VLog.v(TAG, "getAuthTokenLabel: vuid " + userId
+                + ", accountType " + accountType
+                + ", authTokenType " + authTokenType
+                + ", caller's uid " + Binder.getCallingUid()
+                + ", pid " + Binder.getCallingPid());
+
         new Session(response, userId, info, false, false, null) {
 
             @Override
@@ -589,6 +648,7 @@ public class VAccountManagerService implements IAccountManager {
         }.bind();
     }
 
+    @Override
     public void confirmCredentials(int userId, IAccountManagerResponse response, final Account account, final Bundle options, final boolean expectActivityLaunch) {
         if (response == null) throw new IllegalArgumentException("response is null");
         if (account == null) throw new IllegalArgumentException("account is null");
@@ -601,6 +661,13 @@ public class VAccountManagerService implements IAccountManager {
             }
             return;
         }
+        VLog.v(TAG, "confirmCredentials: vuid " + userId
+                + ", account " + account
+                + ", options " + options
+                + ", expectActivityLaunch " + expectActivityLaunch
+                + ", caller's uid " + Binder.getCallingUid()
+                + ", pid " + Binder.getCallingPid());
+
         new Session(response, userId, info, expectActivityLaunch, true, account.name, true, true) {
 
             @Override
@@ -627,12 +694,20 @@ public class VAccountManagerService implements IAccountManager {
             }
             return;
         }
+        VLog.v(TAG, "addAccount: vuid " + userId
+                + ", accountType " + accountType
+                + ", authTokenType " + authTokenType
+                + ", expectActivityLaunch " + expectActivityLaunch
+                + ", optionsIn " + optionsIn
+                + ", requiredFeatures " + Arrays.toString(requiredFeatures)
+                + ", caller's uid " + Binder.getCallingUid()
+                + ", pid " + Binder.getCallingPid());
+
         new Session(response, userId, info, expectActivityLaunch, true, null, false, true) {
 
             @Override
             public void run() throws RemoteException {
-                mAuthenticator.addAccount(this, mAuthenticatorInfo.desc.type, authTokenType, requiredFeatures,
-                        optionsIn);
+                mAuthenticator.addAccount(this, mAuthenticatorInfo.desc.type, authTokenType, requiredFeatures, optionsIn);
             }
 
             @Override
@@ -726,6 +801,14 @@ public class VAccountManagerService implements IAccountManager {
     @Override
     public boolean setAccountVisibility(int vuid, Account account, String packageName, int newVisibility) {
         if (account == null) throw new IllegalArgumentException("account is null");
+        final int callingUid = Binder.getCallingUid();
+        VLog.v(TAG, "setAccountVisibility: vuid " + vuid
+                + ", account " + account
+                + ", packageName " + packageName
+                + ", caller's uid " + callingUid
+                + ", pid " + Binder.getCallingPid()
+                + ", newVisibility " + newVisibility);
+
         synchronized (accountsByUserId) {
             final VAccount vAccount = getVAccountByAccountLocked(vuid, account);
             if (vAccount == null) {
@@ -736,7 +819,7 @@ public class VAccountManagerService implements IAccountManager {
                 return false;
             }
             vAccount.packageToVisibility.put(packageName, newVisibility);
-            // syncAccountsConfigLocked();
+            saveAllAccounts();
         }
         return true;
     }
@@ -744,6 +827,12 @@ public class VAccountManagerService implements IAccountManager {
     @Override
     public Map getPackagesAndVisibilityForAccount(int vuid, Account account) {
         if (account == null) throw new IllegalArgumentException("account is null");
+        final int callingUid = Binder.getCallingUid();
+        VLog.v(TAG, "getPackagesAndVisibilityForAccount: vuid " + vuid
+                + ", account " + account
+                + ", caller's uid " + callingUid
+                + ", pid " + Binder.getCallingPid());
+
         synchronized (accountsByUserId) {
             final VAccount vAccount = getVAccountByAccountLocked(vuid, account);
             if (vAccount != null) {
@@ -756,6 +845,13 @@ public class VAccountManagerService implements IAccountManager {
     @Override
     public int getAccountVisibility(int vuid, Account account, String packageName) {
         if (account == null) throw new IllegalArgumentException("account is null");
+        final int callingUid = Binder.getCallingUid();
+        VLog.v(TAG, "getAccountVisibility: vuid " + vuid
+                + ", account " + account
+                + ", packageName " + packageName
+                + ", caller's uid " + callingUid
+                + ", pid " + Binder.getCallingPid());
+
         synchronized (accountsByUserId) {
             final VAccount vAccount = getVAccountByAccountLocked(vuid, account);
             final Integer visibility = vAccount != null ? vAccount.packageToVisibility.get(packageName) : null;
@@ -784,6 +880,13 @@ public class VAccountManagerService implements IAccountManager {
         if (TextUtils.isEmpty(packageName)) {
             return Collections.EMPTY_MAP;
         }
+        final int callingUid = Binder.getCallingUid();
+        VLog.v(TAG, "getAccountVisibility: vuid " + vuid
+                + ", packageName " + packageName
+                + ", accountType " + accountType
+                + ", caller's uid " + callingUid
+                + ", pid " + Binder.getCallingPid());
+
         synchronized (accountsByUserId) {
             final HashMap<Account, Integer> visibility = new HashMap<Account, Integer>();
             final List<VAccount> list = accountsByUserId.get(vuid);
@@ -791,7 +894,7 @@ public class VAccountManagerService implements IAccountManager {
                 for (VAccount vAccount : list) {
                     if (!isPluginAccountType(vuid, vAccount.type)) {
                         // This means the account is unavailable, e.g. GMS is disabled!
-                        continue;
+                        // continue;
                     }
                     if (!TextUtils.isEmpty(accountType) && !TextUtils.equals(accountType, vAccount.type)) {
                         continue;
@@ -838,6 +941,12 @@ public class VAccountManagerService implements IAccountManager {
             return;
         }
         // FIXME: Cancel Notification
+        final int callingUid = Binder.getCallingUid();
+        VLog.v(TAG, "removeAccount: vuid " + userId
+                + ", account " + account
+                + ", expectActivityLaunch " + expectActivityLaunch
+                + ", caller's uid " + callingUid
+                + ", pid " + Binder.getCallingPid());
 
         new Session(response, userId, info, expectActivityLaunch, true, account.name) {
             @Override
@@ -876,7 +985,6 @@ public class VAccountManagerService implements IAccountManager {
             }
 
         }.bind();
-
     }
 
     @Override
@@ -888,6 +996,13 @@ public class VAccountManagerService implements IAccountManager {
     private boolean removeAccountInternal(int userId, Account account) {
         List<VAccount> accounts = accountsByUserId.get(userId);
         if (accounts != null) {
+            final int callingUid = Binder.getCallingUid();
+            VLog.v(TAG, "removeAccountInternal: vuid " + userId
+                    + ", account " + account
+                    + ", vAccounts " + Arrays.toString(accounts.toArray())
+                    + ", caller's uid " + callingUid
+                    + ", pid " + Binder.getCallingPid());
+
             Iterator<VAccount> iterator = accounts.iterator();
             while (iterator.hasNext()) {
                 VAccount vAccount = iterator.next();
@@ -912,6 +1027,13 @@ public class VAccountManagerService implements IAccountManager {
         }
         synchronized (accountsByUserId) {
             VAccount vAccount = getAccount(userId, account);
+            final int callingUid = Binder.getCallingUid();
+            VLog.v(TAG, "accountAuthenticated: vuid " + userId
+                    + ", account " + account
+                    + ", vAccount " + vAccount
+                    + ", caller's uid " + callingUid
+                    + ", pid " + Binder.getCallingPid());
+
             if (vAccount != null) {
                 vAccount.lastAuthenticatedTime = System.currentTimeMillis();
                 saveAllAccounts();
@@ -928,6 +1050,14 @@ public class VAccountManagerService implements IAccountManager {
         synchronized (accountsByUserId) {
             List<VAccount> accounts = accountsByUserId.get(userId);
             if (accounts != null) {
+                final int callingUid = Binder.getCallingUid();
+                VLog.v(TAG, "invalidateAuthToken: vuid " + userId
+                        + ", accountType " + accountType
+                        + ", authToken " + authToken
+                        + ", vAccounts " + Arrays.toString(accounts.toArray())
+                        + ", caller's uid " + callingUid
+                        + ", pid " + Binder.getCallingPid());
+
                 boolean changed = false;
                 for (VAccount account : accounts) {
                     if (account.type.equals(accountType)) {
@@ -957,6 +1087,14 @@ public class VAccountManagerService implements IAccountManager {
         // TODO: Cancel Notification
         synchronized (accountsByUserId) {
             VAccount vAccount = getAccount(userId, accountToRename);
+            final int callingUid = Binder.getCallingUid();
+            VLog.v(TAG, "renameAccountInternal: vuid " + userId
+                    + ", accountToRename " + accountToRename
+                    + ", newName " + newName
+                    + ", vAccount " + vAccount
+                    + ", caller's uid " + callingUid
+                    + ", pid " + Binder.getCallingPid());
+
             if (vAccount != null) {
                 vAccount.previousName = vAccount.name;
                 vAccount.name = newName;
@@ -982,13 +1120,19 @@ public class VAccountManagerService implements IAccountManager {
         if (authTokenType == null) throw new IllegalArgumentException("authTokenType is null");
         synchronized (accountsByUserId) {
             VAccount vAccount = getAccount(userId, account);
+            final int callingUid = Binder.getCallingUid();
+            VLog.v(TAG, "peekAuthToken: vuid " + userId
+                    + ", account " + account
+                    + ", authTokenType " + authTokenType
+                    + ", vAccount " + vAccount
+                    + ", caller's uid " + callingUid
+                    + ", pid " + Binder.getCallingPid());
             if (vAccount != null) {
                 return vAccount.authTokens.get(authTokenType);
             }
             return null;
         }
     }
-
 
     private String getCustomAuthToken(int userId, Account account, String authTokenType, String packageName) {
         AuthTokenRecord record = new AuthTokenRecord(userId, account, authTokenType, packageName);
@@ -1592,5 +1736,4 @@ public class VAccountManagerService implements IAccountManager {
                     + ", " + (mFeatures != null ? TextUtils.join(",", mFeatures) : null);
         }
     }
-
 }

@@ -1154,6 +1154,7 @@ class MethodProxies {
         public Object call(Object who, Method method, Object... args) throws Throwable {
             String permission = (String) args[0];
             if (SpecialComponentList.isWhitePermission(permission)) {
+                VLog.w(TAG, " checkPermission " + permission + " is granted for white list");
                 return PackageManager.PERMISSION_GRANTED;
             }
             if (permission.startsWith("com.google")) {

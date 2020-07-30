@@ -1,5 +1,6 @@
 package com.lody.virtual.client.hook.proxies.devicepolicy;
 
+import android.annotation.TargetApi;
 import android.app.admin.SystemUpdatePolicy;
 import android.content.Context;
 import android.os.Build;
@@ -8,6 +9,7 @@ import android.util.Log;
 import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.client.hook.base.BinderInvocationProxy;
 import com.lody.virtual.client.hook.base.MethodProxy;
+import com.lody.virtual.client.hook.base.StaticMethodProxy;
 
 import java.lang.reflect.Method;
 
@@ -17,7 +19,7 @@ import mirror.android.app.admin.IDevicePolicyManager;
  * Created by wy on 2017/10/20.
  */
 
-public class DevicePolicyManagerStub extends BinderInvocationProxy{
+public class DevicePolicyManagerStub extends BinderInvocationProxy {
     public DevicePolicyManagerStub() {
         super(IDevicePolicyManager.Stub.asInterface, Context.DEVICE_POLICY_SERVICE);
     }
@@ -70,7 +72,7 @@ public class DevicePolicyManagerStub extends BinderInvocationProxy{
         }
     }
 
-    private class fakeResultHandle extends MethodProxy {
+    private class fakeResultHandle extends StaticMethodProxy {
         private final Object fakeResult;
         fakeResultHandle(String methodName, Object result) {
             super(methodName);
@@ -83,7 +85,7 @@ public class DevicePolicyManagerStub extends BinderInvocationProxy{
         }
     }
 
-    private static class packageNameConverter extends MethodProxy {
+    private static class packageNameConverter extends StaticMethodProxy {
         private final int pkgIdx;
 
         public  packageNameConverter(String methodName, int idx) {
@@ -112,6 +114,7 @@ public class DevicePolicyManagerStub extends BinderInvocationProxy{
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     private static class getSystemUpdatePolicy extends MethodProxy {
         @Override
         public String getMethodName() {

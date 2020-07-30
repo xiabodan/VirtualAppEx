@@ -39,5 +39,21 @@ public class BackupManagerStub extends BinderInvocationProxy {
 		addMethodProxy(new ResultStaticMethodProxy("setBackupPassword", true));
 		addMethodProxy(new ResultStaticMethodProxy("hasBackupPassword", false));
 		addMethodProxy(new ResultStaticMethodProxy("beginRestoreSession", null));
+		addMethodProxy(new ResultStaticMethodProxy("updateTransportAttributesForUser", null));
+		addMethodProxy(new ResultStaticMethodProxy("getDataManagementLabelForUser", null));
+		addMethodProxy(new ResultStaticMethodProxy("getDataManagementIntentLabel", null));
+		addMethodProxy(new ResultStaticMethodProxy("getDataManagementIntentForUser", null));
+		addMethodProxy(new ResultStaticMethodProxy("getDestinationStringForUser", null));
+		addMethodProxy(new ResultStaticMethodProxy("getConfigurationIntentForUser", null));
+		addMethodProxy(new ResultStaticMethodProxy("setAncestralSerialNumber", null));
+		addMethodProxy(new ResultStaticMethodProxy("cancelBackups", null));
+		addMethodProxy(new ResultStaticMethodProxy("requestBackup", -1));
+		addMethodProxy(new ResultStaticMethodProxy("isAppEligibleForBackupForUser", false));
+		addMethodProxy(new ResultStaticMethodProxy("getAvailableRestoreTokenForUser", 0));
+		addMethodProxy(new ResultStaticMethodProxy("selectBackupTransportAsyncForUser", null));
+		addMethodProxy(new ResultStaticMethodProxy("getCurrentTransportComponentForUser", null));
+		addMethodProxy(new ResultStaticMethodProxy("setAutoRestore", null));
+		addMethodProxy(new ResultStaticMethodProxy("isBackupServiceActive", false));
+		addMethodProxy(new ResultStaticMethodProxy("beginRestoreSessionForUser", false));
 	}
 }

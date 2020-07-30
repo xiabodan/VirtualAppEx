@@ -63,6 +63,7 @@ public class MethodProxies {
         }
     }
 
+    /*
     static class RequestLocationUpdates extends ReplaceLastPkgMethodProxy {
 
         public RequestLocationUpdates() {
@@ -84,8 +85,7 @@ public class MethodProxies {
                 }
                 return 0;
             }
-            return true;
-            // return super.call(who, method, args);
+            return super.call(who, method, args);
         }
     }
 
@@ -103,7 +103,7 @@ public class MethodProxies {
             }
             return super.call(who, method, args);
         }
-    }
+    } */
 
     static class GetLastLocation extends ReplaceLastPkgMethodProxy {
 
@@ -296,6 +296,7 @@ public class MethodProxies {
         }
     }
 
+    /*
     static class locationCallbackFinished extends MethodProxy {
 
         @Override
@@ -310,6 +311,5 @@ public class MethodProxies {
         public String getMethodName() {
             return "locationCallbackFinished";
         }
-    }
-
+    } */
 }

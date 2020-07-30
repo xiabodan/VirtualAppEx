@@ -42,6 +42,40 @@ public class VAccount implements Parcelable {
         packageToVisibility = new HashMap<>();
     }
 
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder("VAccount{userId=" + userId
+                + ", name=" + name
+                + ", password=" + password
+                + ", type=" + type
+                + ", lastAuthenticatedTime=" + lastAuthenticatedTime
+                + ", ");
+        /* str.append("authTokens[");
+        for (Map.Entry<String, String> entry : authTokens.entrySet()) {
+            str.append(entry.getKey());
+            str.append(":");
+            str.append(entry.getValue());
+            str.append(", ");
+        }
+        str.append("], userDatas[");
+        for (Map.Entry<String, String> entry : userDatas.entrySet()) {
+            str.append(entry.getKey());
+            str.append(":");
+            str.append(entry.getValue());
+            str.append(", ");
+        }
+        str.append("], packageToVisibility["); */
+        str.append("packageToVisibility[");
+        for (Map.Entry<String, Integer> entry : packageToVisibility.entrySet()) {
+            str.append(entry.getKey());
+            str.append(":");
+            str.append(entry.getValue());
+            str.append(", ");
+        }
+        str.append("]}");
+        return str.toString();
+    }
+
     public VAccount(Parcel in) {
         userId = in.readInt();
         name = in.readString();

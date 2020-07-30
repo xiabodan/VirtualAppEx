@@ -1,10 +1,16 @@
 package com.lody.virtual.client.hook.utils;
 
+import android.util.Log;
+
 import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.helper.utils.ArrayUtils;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+
+import mirror.android.content.pm.ParceledListSlice;
 
 /**
  * @author Lody
@@ -21,6 +27,20 @@ public class MethodParameterUtils {
 			return (T) args[index];
 		}
 		return null;
+	}
+
+	public static int findFirstObjectIndexForClassInArgs(Object[] args, Class clazz, int startIdx) {
+		if (startIdx < 0) {
+			startIdx = 0;
+		}
+		if (args != null && args.length > startIdx) {
+			for (; startIdx < args.length; startIdx++) {
+				if (clazz.isInstance(args[startIdx])) {
+					return startIdx;
+				}
+			}
+		}
+		return -1;
 	}
 
 	public static String replaceFirstAppPkg(Object[] args) {
@@ -75,5 +95,11 @@ public class MethodParameterUtils {
 		}
 	}
 
-
+	public static Object convertListToParceledListSliceIfNeeded(Method method, List list) {
+		Class returnType = method != null ? method.getReturnType() : null;
+		if (returnType != null && ParceledListSlice.isClass(returnType)) {
+			return ParceledListSlice.emptyList();
+		}
+		return list;
+	}
 }

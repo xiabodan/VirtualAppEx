@@ -8,6 +8,8 @@ import com.lody.virtual.helper.ipcbus.IPCSingleton;
 import com.lody.virtual.server.interfaces.INotificationManager;
 import com.lody.virtual.server.notification.NotificationCompat;
 
+import java.util.List;
+
 /**
  * Fake notification manager
  */
@@ -83,5 +85,30 @@ public class VNotificationManager {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+    }
+
+    public void createNotificationChannel(String pkg, int vuid, String channelId) {
+        try {
+            getService().createNotificationChannel(pkg, vuid, channelId);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteNotificationChannel(String pkg, int vuid, String channelId) {
+        try {
+            getService().deleteNotificationChannel(pkg, vuid, channelId);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<String> getNotificationChannels(String pkg, int vuid) {
+        try {
+            return getService().getNotificationChannels(pkg, vuid);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

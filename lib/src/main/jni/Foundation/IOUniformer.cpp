@@ -606,8 +606,12 @@ void IOUniformer::startUniformer(const char *so_path, int api_level, int preview
             void* base = info.dli_fbase;
             ALOGD("inline hook libc addr base %p", base);
             if (base != nullptr) {
+                // pixel
                 MSHookFunction((void *) ((long)base + 0xCEEB0), (void *)new___openat, (void **) &orig___openat);
                 MSHookFunction((void *) ((long)base + 0xCF070), (void *)new___statfs, (void **) &orig___statfs);
+                // oneplus
+                // MSHookFunction((void *) ((long)base + 0xC1380), (void *)new___openat, (void **) &orig___openat);
+                // MSHookFunction((void *) ((long)base + 0xC1540), (void *)new___statfs, (void **) &orig___statfs);
             }
         }
 

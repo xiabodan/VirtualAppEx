@@ -3,6 +3,7 @@
 //
 #include <Jni/VAJni.h>
 #include "VMPatch.h"
+#include "LBCoreIPCClient.h"
 
 namespace FunctionDef {
     typedef void (*Function_DalvikBridgeFunc)(const void **, void *, const void *, void *);
@@ -26,6 +27,8 @@ namespace FunctionDef {
                                                       jboolean);
 
     typedef jint (*Function_getCallingUid)(JNIEnv *, jclass);
+
+    typedef jint (*Function_getCallingPid)(JNIEnv *, jclass);
 
     typedef jint (*Function_audioRecordNativeCheckPermission)(JNIEnv *, jobject, jstring);
 }
@@ -53,6 +56,7 @@ static struct {
     int (*IPCThreadState_self)(void);
 
     Function_getCallingUid jni_orig_getCallingUid;
+    Function_getCallingPid jni_orig_getCallingPid;
     Function_DalvikBridgeFunc orig_cameraNativeSetup_dvm;
 
     int cameraMethodType;
@@ -75,19 +79,46 @@ static struct {
 
 
 jint getCallingUid(alias_ref<jclass> clazz) {
-    jint uid;
+    jint uid = 0;
+    jint origUid = 0;
+    jint ipcUid = 0;
+    jint jniUid = 0;
+    jint callingPid = 0;
+    jint myUid = getuid();
+    jint myPid = getpid();
     if (patchEnv.is_art) {
-        uid = patchEnv.jni_orig_getCallingUid(Environment::ensureCurrentThreadIsAttached(),
-                                              clazz.get());
+        origUid = patchEnv.jni_orig_getCallingUid(Environment::ensureCurrentThreadIsAttached(), clazz.get());
     } else {
-        uid = patchEnv.native_getCallingUid(patchEnv.IPCThreadState_self());
+        origUid = patchEnv.native_getCallingUid(patchEnv.IPCThreadState_self());
     }
-    uid = Environment::ensureCurrentThreadIsAttached()->CallStaticIntMethod(nativeEngineClass.get(),
-                                                                            patchEnv.method_onGetCallingUid,
-                                                                            uid);
+    uid = origUid;
+    if (patchEnv.api_level >= 29 && patchEnv.jni_orig_getCallingPid) {
+        callingPid = patchEnv.jni_orig_getCallingPid(Environment::ensureCurrentThreadIsAttached(), clazz.get());
+        char socket_name[128];
+        snprintf(socket_name, sizeof(socket_name), "LBIPC-%s", patchEnv.host_packageName);
+        LBCoreIPCClient client(socket_name);
+        ipcUid = client.getCallingUid(0, 0, callingPid, myPid);
+    }
+    if (ipcUid == 0) {
+        jniUid = Environment::ensureCurrentThreadIsAttached()->CallStaticIntMethod(
+                nativeEngineClass.get(), patchEnv.method_onGetCallingUid, uid);
+        if (jniUid != 0) {
+            uid = jniUid;
+        }
+    } else {
+        uid = ipcUid;
+    }
+    // ALOGD("getCallingUid: IPC uid %d, callingPid %d, ipcUid %d, jniUid %d, origUid %d", uid, callingPid, ipcUid, jniUid, origUid);
     return uid;
 }
 
+jint getCallingPid(alias_ref<jclass> clazz) {
+    jint pid;
+    if (patchEnv.jni_orig_getCallingPid != nullptr) {
+        pid = patchEnv.jni_orig_getCallingPid(Environment::ensureCurrentThreadIsAttached(),clazz.get());
+    }
+    return pid;
+}
 
 static jobject new_native_openDexNativeFunc(JNIEnv *env, jclass jclazz, jstring javaSourceName,
                                             jstring javaOutputName, jint options) {
@@ -290,6 +321,18 @@ inline void replaceGetCallingUid(jboolean isArt) {
     }
 }
 
+inline void replaceGetCallingPid(jboolean isArt, jint api_level) {
+    auto binderClass = findClassLocal("android/os/Binder");
+    if (api_level >= 29 && isArt) {
+        size_t mtd_getCallingPid = (size_t) binderClass->getStaticMethod<jint(void)>("getCallingPid").getId();
+        int nativeFuncOffset = patchEnv.native_offset;
+        void **jniFuncPtr = (void **) (mtd_getCallingPid + nativeFuncOffset);
+        patchEnv.jni_orig_getCallingPid = (Function_getCallingPid) (*jniFuncPtr);
+        *jniFuncPtr = (void *) getCallingPid;
+        ALOGD("replaceGetCallingPid jni_orig_getCallingPid %p", patchEnv.jni_orig_getCallingPid);
+    }
+}
+
 inline void
 replaceOpenDexFileMethod(jobject javaMethod, jboolean isArt, int apiLevel) {
 
@@ -373,7 +416,6 @@ void hookAndroidVM(JArrayClass<jobject> javaMethods,
                    jint cameraMethodType) {
 
     JNIEnv *env = Environment::current();
-
     JNINativeMethod methods[] = {
             NATIVE_METHOD((void *) mark, "nativeMark", "()V"),
     };
@@ -382,15 +424,14 @@ void hookAndroidVM(JArrayClass<jobject> javaMethods,
     }
     patchEnv.is_art = isArt;
     patchEnv.cameraMethodType = cameraMethodType;
-    patchEnv.host_packageName = (char *) env->GetStringUTFChars(packageName,
-                                                                NULL);
+    patchEnv.host_packageName = (char *) env->GetStringUTFChars(packageName, NULL);
     patchEnv.api_level = apiLevel;
     void *soInfo = getDvmOrArtSOHandle();
-    patchEnv.method_onGetCallingUid = nativeEngineClass->getStaticMethod<jint(jint)>(
-            "onGetCallingUid").getId();
+    patchEnv.method_onGetCallingUid = nativeEngineClass->getStaticMethod<jint(jint)>("onGetCallingUid").getId();
     patchEnv.method_onOpenDexFileNative = env->GetStaticMethodID(nativeEngineClass.get(),
-                                                                 "onOpenDexFileNative",
-                                                                 "([Ljava/lang/String;)V");
+            "onOpenDexFileNative","([Ljava/lang/String;)V");
+
+    ALOGD("hookAndroidVM isArt %d, packageName %s, apiLevel %d", patchEnv.is_art, patchEnv.host_packageName, patchEnv.api_level);
 
     if (isArt) {
         patchEnv.art_work_around_app_jni_bugs = dlsym(soInfo, "art_work_around_app_jni_bugs");
@@ -411,28 +452,21 @@ void hookAndroidVM(JArrayClass<jobject> javaMethods,
             dlclose(h);
         }
 
-        patchEnv.GetCstrFromString = (char *(*)(void *)) dlsym(soInfo,
-                                                               "_Z23dvmCreateCstrFromStringPK12StringObject");
+        patchEnv.GetCstrFromString = (char *(*)(void *)) dlsym(soInfo, "_Z23dvmCreateCstrFromStringPK12StringObject");
         if (!patchEnv.GetCstrFromString) {
-            patchEnv.GetCstrFromString = (char *(*)(void *)) dlsym(soInfo,
-                                                                   "dvmCreateCstrFromString");
+            patchEnv.GetCstrFromString = (char *(*)(void *)) dlsym(soInfo, "dvmCreateCstrFromString");
         }
-        patchEnv.GetStringFromCstr = (void *(*)(const char *)) dlsym(soInfo,
-                                                                     "_Z23dvmCreateStringFromCstrPKc");
+        patchEnv.GetStringFromCstr = (void *(*)(const char *)) dlsym(soInfo, "_Z23dvmCreateStringFromCstrPKc");
         if (!patchEnv.GetStringFromCstr) {
-            patchEnv.GetStringFromCstr = (void *(*)(const char *)) dlsym(soInfo,
-                                                                         "dvmCreateStringFromCstr");
+            patchEnv.GetStringFromCstr = (void *(*)(const char *)) dlsym(soInfo, "dvmCreateStringFromCstr");
         }
     }
     measureNativeOffset(isArt);
     replaceGetCallingUid(isArt);
-    replaceOpenDexFileMethod(javaMethods.getElement(OPEN_DEX).get(), isArt,
-                             apiLevel);
-    replaceCameraNativeSetupMethod(javaMethods.getElement(CAMERA_SETUP).get(),
-                                   isArt, apiLevel);
-    replaceAudioRecordNativeCheckPermission(javaMethods.getElement(
-            AUDIO_NATIVE_CHECK_PERMISSION).get(),
-                                            isArt, apiLevel);
+    replaceGetCallingPid(isArt, apiLevel);
+    replaceOpenDexFileMethod(javaMethods.getElement(OPEN_DEX).get(), isArt, apiLevel);
+    replaceCameraNativeSetupMethod(javaMethods.getElement(CAMERA_SETUP).get(), isArt, apiLevel);
+    replaceAudioRecordNativeCheckPermission(javaMethods.getElement(AUDIO_NATIVE_CHECK_PERMISSION).get(), isArt, apiLevel);
 }
 
 void *getDvmOrArtSOHandle() {

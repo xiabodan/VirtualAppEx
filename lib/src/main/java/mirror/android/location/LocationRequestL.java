@@ -11,4 +11,21 @@ public class LocationRequestL {
     public static RefObject<Object> mWorkSource;
     public static RefObject<String> mProvider;
     public static RefMethod<String> getProvider;
+
+    public static boolean isInstance(Object object) {
+        if (TYPE != null) {
+            return TYPE.isInstance(object);
+        }
+        return false;
+    }
+
+    public static String mProvider(Object thiz) {
+        return mProvider != null ? mProvider.get(thiz) : null;
+    }
+
+    public static void mProvider(Object thiz, String value) {
+        if (mProvider != null) {
+            mProvider.set(thiz, value);
+        }
+    }
 }

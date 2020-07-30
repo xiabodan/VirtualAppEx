@@ -96,6 +96,10 @@ public class VEnvironment {
         return new File(getSystemSecureDirectory(), "packages.ini");
     }
 
+    public static File getNotificationFile() {
+        return new File(getSystemSecureDirectory(), "notification.ini");
+    }
+
     /**
      * @return Virtual storage config file
      */

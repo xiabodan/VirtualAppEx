@@ -2,6 +2,8 @@ package com.lody.virtual.server.interfaces;
 
 import android.os.RemoteException;
 
+import java.util.List;
+
 /**
  * @author Lody
  */
@@ -18,4 +20,10 @@ public interface INotificationManager {
     void addNotification(int id, String tag, String packageName, int userId) throws RemoteException;
 
     void cancelAllNotification(String packageName, int userId) throws RemoteException;
+
+    void createNotificationChannel(String pkg, int vuid, String channelId) throws RemoteException;
+
+    void deleteNotificationChannel(String pkg, int vuid, String channelId) throws RemoteException;
+
+    List<String> getNotificationChannels(String pkg, int vuid) throws RemoteException;
 }
