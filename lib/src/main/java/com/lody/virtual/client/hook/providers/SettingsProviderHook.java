@@ -8,7 +8,9 @@ import com.lody.virtual.client.hook.base.MethodBox;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,6 +24,15 @@ public class SettingsProviderHook extends ExternalProviderHook {
     private static final int METHOD_GET = 0;
     private static final int METHOD_PUT = 1;
 
+    public static final int DB_INVALID = -1;
+    public static final int DB_SYSTEM = 0;
+    public static final int DB_SECURE = 1;
+    public static final int DB_GLOBAL = 2;
+    public static final int DB_CONFIG = 3;
+    public static final String NAMESPACE_TEXTCLASSIFIER = "textclassifier";
+    public static final String NAMESPACE_RUNTIME = "runtime";
+    public static final List<String> PUBLIC_NAMESPACES = Arrays.asList(NAMESPACE_TEXTCLASSIFIER, NAMESPACE_RUNTIME);
+
     private static final Map<String, String> PRE_SET_VALUES = new HashMap<>();
 
     static {
@@ -32,6 +43,19 @@ public class SettingsProviderHook extends ExternalProviderHook {
 
     public SettingsProviderHook(Object base) {
         super(base);
+    }
+
+    static int parseDatabase(String method) {
+        if (method.contains("secure")) {
+            return DB_SECURE;
+        } else if (method.contains("system")) {
+            return DB_SYSTEM;
+        } else if (method.contains("global")) {
+            return DB_GLOBAL;
+        } else if (method.contains("config")) {
+            return  DB_CONFIG;
+        }
+        return DB_INVALID;
     }
 
     private static int getMethodType(String method) {
@@ -54,7 +78,14 @@ public class SettingsProviderHook extends ExternalProviderHook {
         if (!VClientImpl.get().isBound()) {
             return methodBox.call();
         }
-        int methodType = getMethodType(method);
+        final int methodType = getMethodType(method);
+        final int dbIdx = parseDatabase(method);
+        if (dbIdx == DB_CONFIG && arg instanceof String) {  // force fake config
+            final String namespace = arg.split("/")[0];
+            if (methodType == METHOD_PUT || !PUBLIC_NAMESPACES.contains(namespace)) {
+                return new Bundle();
+            }
+        }
         if (METHOD_GET == methodType) {
             String presetValue = PRE_SET_VALUES.get(arg);
             if (presetValue != null) {

@@ -18,7 +18,10 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.lody.virtual.server.pm.PackageSetting;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * @author Lody
@@ -63,6 +66,25 @@ public class VPackage implements Parcelable {
     public Object mExtras;
 
     public VPackage() {
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder("VPackage{packageName=" + packageName);
+        str.append(", mVersionName " + mVersionName);
+        str.append(", mVersionCode " + mVersionCode);
+        str.append(", mSharedUserId " + mSharedUserId);
+        str.append(", mSharedUserLabel " + mSharedUserLabel);
+        if (usesLibraries != null) {
+            str.append(", usesLibraries " + Arrays.toString(usesLibraries.toArray()));
+        }
+        PackageSetting ps = (PackageSetting) mExtras;
+        str.append(", appid " + ps.appId);
+        str.append(", apkPath " + ps.apkPath);
+        str.append(", libPath " + ps.libPath);
+        str.append(", dependSystem " + ps.dependSystem);
+        str.append("}");
+        return str.toString();
     }
 
     protected VPackage(Parcel in) {

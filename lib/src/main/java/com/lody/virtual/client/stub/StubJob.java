@@ -165,7 +165,11 @@ public class StubJob extends Service {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-
+            try {
+                unbindService(this);
+            } catch (Exception e) {
+            }
+            clientJobService = null;
         }
 
         void forceFinishJob() {
@@ -190,5 +194,4 @@ public class StubJob extends Service {
             unbindService(this);
         }
     }
-
 }

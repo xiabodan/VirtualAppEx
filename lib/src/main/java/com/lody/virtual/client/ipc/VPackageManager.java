@@ -15,9 +15,12 @@ import android.os.RemoteException;
 
 import com.lody.virtual.client.env.VirtualRuntime;
 import com.lody.virtual.helper.ipcbus.IPCSingleton;
+import com.lody.virtual.helper.utils.ArrayUtils;
 import com.lody.virtual.server.IPackageInstaller;
 import com.lody.virtual.server.interfaces.IPackageManager;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -168,11 +171,20 @@ public class VPackageManager {
     public ApplicationInfo getApplicationInfo(String packageName, int flags, int userId) {
         try {
             ApplicationInfo info =  getService().getApplicationInfo(packageName, flags, userId);
-            if (info != null) {
-                if (Build.VERSION.SDK_INT >= 28) {
-                    info.sharedLibraryFiles = new String[]{"/system/framework/android.test.base.jar",
-                            "/system/framework/android.test.mock.jar", "/system/framework/android.test.runner.jar", "/system/framework/javax.obex.jar",
-                            "/system/framework/org.apache.http.legacy.boot.jar", "/system/framework/org.apache.http.legacy.jar"};
+            if (info != null && Build.VERSION.SDK_INT >= 28) {
+                String[] sharedLibrarys = new String[] {
+                        "/system/framework/android.test.base.jar",
+                        "/system/framework/android.test.mock.jar",
+                        "/system/framework/android.test.runner.jar",
+                        "/system/framework/javax.obex.jar",
+                        "/system/framework/org.apache.http.legacy.boot.jar",
+                        "/system/framework/org.apache.http.legacy.jar",
+                        "/system/framework/com.android.location.provider.jar"
+                };
+                if (info.sharedLibraryFiles == null) {
+                    info.sharedLibraryFiles = sharedLibrarys;
+                } else {
+                    info.sharedLibraryFiles = ArrayUtils.concat(sharedLibrarys, info.sharedLibraryFiles);
                 }
             }
             return info;

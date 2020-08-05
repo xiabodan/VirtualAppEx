@@ -416,15 +416,14 @@ public class VPackageManagerService implements IPackageManager {
                 // If we have saved a preference for a preferred activity for
                 // this Intent, use that.
 
-                //从候选列表中查找一个最合适的，如果候选列表没有最合适的返回null
-                //然后从系统中查找合适的打开intent
-                ResolveInfo ri = findPreferredActivity(intent, resolvedType,
-                        flags, query, r0.priority);
-                //noinspection ConstantConditions
+                // 从候选列表中查找一个最合适的，如果候选列表没有最合适的返回null
+                // 然后从系统中查找合适的打开intent
+                // ResolveInfo ri = findPreferredActivity(intent, resolvedType, flags, query, r0.priority);
+                ResolveInfo ri = query.get(0);
+                // noinspection ConstantConditions
                 if (ri != null) {
                     return ri;
                 }
-
                 return null;
             }
         }
@@ -432,17 +431,14 @@ public class VPackageManagerService implements IPackageManager {
     }
 
     private ResolveInfo findPreferredActivity(Intent intent, String resolvedType, int flags, List<ResolveInfo> query, int priority) {
-
         try {
             Class clazz = Class.forName("com.virtual.helper.VALibHelper");
             Method method = clazz.getDeclaredMethod("findPreferredActivity", Intent.class, String.class, int.class, List.class, int.class);
             return (ResolveInfo) method.invoke(null, intent, resolvedType, flags, query, priority);
         } catch (Exception e) {
-            e.printStackTrace();
+            // e.printStackTrace();
             return query.get(0);
         }
-
-//        return null;
     }
 
 

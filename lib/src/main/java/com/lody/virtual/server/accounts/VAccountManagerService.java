@@ -17,6 +17,7 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
@@ -71,7 +72,7 @@ public class VAccountManagerService implements IAccountManager {
     private static final Boolean DEBUG = Features.FEATURE_DEBUG_SUPPORT;
     private static final AtomicReference<VAccountManagerService> sInstance = new AtomicReference<>();
     private static final long CHECK_IN_TIME = 30 * 24 * 60 * 1000L;
-    private static final String TAG = "VAAccountMS";
+    private static final String TAG = "VAAcMS";
     private final SparseArray<List<VAccount>> accountsByUserId = new SparseArray<>();
     private final LinkedList<AuthTokenRecord> authTokenRecords = new LinkedList<>();
     private final LinkedHashMap<String, Session> mSessions = new LinkedHashMap<>();
@@ -1202,7 +1203,11 @@ public class VAccountManagerService implements IAccountManager {
     }
 
     private void sendAccountsChangedBroadcast(int userId) {
-        Intent intent = new Intent(AccountManager.LOGIN_ACCOUNTS_CHANGED_ACTION);
+        String toBroadcast = "android.accounts.action.VISIBLE_ACCOUNTS_CHANGED";
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            toBroadcast = AccountManager.LOGIN_ACCOUNTS_CHANGED_ACTION;
+        }
+        Intent intent = new Intent(toBroadcast);
         VActivityManagerService.get().sendBroadcastAsUser(intent, new VUserHandle(userId));
         broadcastCheckInNowIfNeed(userId);
     }

@@ -12,8 +12,8 @@ import lab.galaxy.yahfa.HookMain;
  * Created by liuruikai756 on 30/03/2017.
  */
 
-public class MainApp {
-    private static final  String TAG = MainApp.class.getSimpleName();
+public class YahfaMainApp {
+    private static final  String TAG = YahfaMainApp.class.getSimpleName();
 
     @TargetApi(21)
     public static void loadPlugin(Context base, String pluginPath) {

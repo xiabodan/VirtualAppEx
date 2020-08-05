@@ -333,9 +333,12 @@ public final class VClientImpl extends IVClient.Stub {
         if (Build.VERSION.SDK_INT >= 24 && "com.tencent.mm:recovery".equals(processName)) {
             fixWeChatRecovery(mInitialApplication);
         }
-        // disable or enable yahfa hook default.
+        if (mInitialApplication != null) {
+            Log.i(TAG, mInitialApplication.getPackageName() + " classloader " + mInitialApplication.getClassLoader());
+        }
         if (Features.FEATURE_YAHFA_SUPPORT) {
-            MainApp.loadPlugin(mInitialApplication, null);
+            // disable or enable yahfa hook default.
+            YahfaMainApp.loadPlugin(mInitialApplication, null);
         }
         if (data.providers != null) {
             installContentProviders(mInitialApplication, data.providers);

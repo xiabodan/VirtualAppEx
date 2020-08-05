@@ -30,11 +30,8 @@ import mirror.android.content.IContentProvider;
 public class ProviderHook implements InvocationHandler {
 
     public static final String QUERY_ARG_SQL_SELECTION = "android:query-arg-sql-selection";
-
-    public static final String QUERY_ARG_SQL_SELECTION_ARGS =
-            "android:query-arg-sql-selection-args";
+    public static final String QUERY_ARG_SQL_SELECTION_ARGS = "android:query-arg-sql-selection-args";
     public static final String QUERY_ARG_SQL_SORT_ORDER = "android:query-arg-sql-sort-order";
-
 
     private static final Map<String, HookFetcher> PROVIDER_MAP = new HashMap<>();
 

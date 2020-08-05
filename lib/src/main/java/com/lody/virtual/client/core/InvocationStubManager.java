@@ -30,6 +30,7 @@ import com.lody.virtual.client.hook.proxies.input.InputMethodManagerStub;
 import com.lody.virtual.client.hook.proxies.isms.ISmsStub;
 import com.lody.virtual.client.hook.proxies.isub.ISubStub;
 import com.lody.virtual.client.hook.proxies.job.JobServiceStub;
+import com.lody.virtual.client.hook.proxies.launcherapps.ILauncherAppsStub;
 import com.lody.virtual.client.hook.proxies.libcore.LibCoreStub;
 import com.lody.virtual.client.hook.proxies.location.LocationManagerStub;
 import com.lody.virtual.client.hook.proxies.media.router.MediaRouterServiceStub;
@@ -45,6 +46,8 @@ import com.lody.virtual.client.hook.proxies.power.PowerManagerStub;
 import com.lody.virtual.client.hook.proxies.restriction.RestrictionStub;
 import com.lody.virtual.client.hook.proxies.search.SearchManagerStub;
 import com.lody.virtual.client.hook.proxies.shortcut.ShortcutServiceStub;
+import com.lody.virtual.client.hook.proxies.systemupdate.ISystemUpdateManagerStub;
+import com.lody.virtual.client.hook.proxies.updateengine.UpdateEngineStub;
 import com.lody.virtual.client.hook.proxies.telephony.TelephonyRegistryStub;
 import com.lody.virtual.client.hook.proxies.telephony.TelephonyStub;
 import com.lody.virtual.client.hook.proxies.usage.UsageStatsManagerStub;
@@ -66,6 +69,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
 
 /**
  * @author Lody
@@ -181,11 +185,14 @@ public final class InvocationStubManager {
 			if (Build.VERSION.SDK_INT >= N) {
                 addInjector(new WifiScannerStub());
                 addInjector(new ShortcutServiceStub());
+                addInjector(new ILauncherAppsStub());
                 addInjector(new DevicePolicyManagerStub());
+                addInjector(new UpdateEngineStub());
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 				addInjector(new AutoFillManagerStub());
 				addInjector(new ICrossProfileAppsStub());
+				addInjector(new ISystemUpdateManagerStub());  // ghost service
 			}
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 				addInjector(new ActivityTaskManagerStub());

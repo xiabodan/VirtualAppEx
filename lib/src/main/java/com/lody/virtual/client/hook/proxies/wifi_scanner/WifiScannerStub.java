@@ -11,5 +11,4 @@ public class WifiScannerStub extends BinderInvocationProxy {
     public WifiScannerStub() {
         super(new GhostWifiScannerImpl(), "wifiscanner");
     }
-
 }

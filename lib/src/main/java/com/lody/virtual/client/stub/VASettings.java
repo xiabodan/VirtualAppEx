@@ -70,5 +70,4 @@ public class VASettings {
         public static String MAC = DEFAULT_MAC;
         public static String SSID = DEFAULT_SSID;
     }
-
 }

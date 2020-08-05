@@ -6,6 +6,7 @@ import android.app.job.JobScheduler;
 import android.app.job.JobWorkItem;
 import android.content.ComponentName;
 import android.content.Context;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -17,6 +18,7 @@ import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.client.ipc.VJobScheduler;
 import com.lody.virtual.client.stub.VASettings;
 import com.lody.virtual.helper.utils.Singleton;
+import com.lody.virtual.helper.utils.VLog;
 import com.lody.virtual.os.VBinder;
 import com.lody.virtual.os.VEnvironment;
 import com.lody.virtual.server.interfaces.IJobService;
@@ -25,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -81,6 +84,15 @@ public class VJobSchedulerService implements IJobService {
             this.clientJobId = id;
         }
 
+        @Override
+        public String toString() {
+            StringBuilder str = new StringBuilder("JobId {"
+                    + "  vuid=" + vuid
+                    + ", packageName=" + packageName
+                    + ", clientJobId=" + clientJobId
+                    + "}");
+            return str.toString();
+        }
 
         JobId(Parcel in) {
             this.vuid = in.readInt();
@@ -134,7 +146,6 @@ public class VJobSchedulerService implements IJobService {
     }
 
     public static final class JobConfig implements Parcelable {
-
         /**
          * The id given by VA.
          */
@@ -146,6 +157,16 @@ public class VJobSchedulerService implements IJobService {
             this.virtualJobId = virtualJobId;
             this.serviceName = serviceName;
             this.extras = extra;
+        }
+
+        @Override
+        public String toString() {
+        StringBuilder str = new StringBuilder("JobConfig {"
+                + "  virtualJobId=" + virtualJobId
+                + ", serviceName=" + serviceName
+                + ", extras=" + extras
+                + "}");
+            return str.toString();
         }
 
         JobConfig(Parcel in) {
@@ -179,7 +200,6 @@ public class VJobSchedulerService implements IJobService {
         };
     }
 
-
     @Override
     public int schedule(JobInfo job) {
         int vuid = VBinder.getCallingUid();
@@ -197,6 +217,14 @@ public class VJobSchedulerService implements IJobService {
         saveJobs();
         mirror.android.app.job.JobInfo.jobId.set(job, config.virtualJobId);
         mirror.android.app.job.JobInfo.service.set(job, mJobProxyComponent);
+
+        VLog.v(TAG, "schedule: vuid " + vuid
+                + ", job " + job
+                + ", jobId " + jobId
+                + ", config " + config
+                + ", caller's uid " + Binder.getCallingUid()
+                + ", pid " + Binder.getCallingPid());
+
         return mScheduler.schedule(job);
     }
 
@@ -331,6 +359,10 @@ public class VJobSchedulerService implements IJobService {
                 mirror.android.app.job.JobInfo.jobId.set(job, jobId.clientJobId);
                 mirror.android.app.job.JobInfo.service.set(job, new ComponentName(jobId.packageName, config.serviceName));
             }
+            VLog.v(TAG, "getAllPendingJobs: vuid " + vuid
+                    + ", jobs " + Arrays.toString(jobs.toArray())
+                    + ", caller's uid " + Binder.getCallingUid()
+                    + ", pid " + Binder.getCallingPid());
         }
         return jobs;
     }

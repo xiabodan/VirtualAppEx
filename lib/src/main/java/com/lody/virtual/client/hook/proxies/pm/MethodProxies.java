@@ -649,12 +649,9 @@ class MethodProxies {
             }
             return null;
         }
-
     }
 
-
     static class DeleteApplicationCacheFiles extends MethodProxy {
-
         @Override
         public String getMethodName() {
             return "deleteApplicationCacheFiles";
@@ -666,7 +663,6 @@ class MethodProxies {
             return method.invoke(who, args);
         }
     }
-
 
     static class SetApplicationBlockedSettingAsUser extends MethodProxy {
 
@@ -686,7 +682,6 @@ class MethodProxies {
             return isAppProcess();
         }
     }
-
 
     static class GetApplicationEnabledSetting extends MethodProxy {
 
@@ -741,7 +736,6 @@ class MethodProxies {
         }
     }
 
-
     static class GetPackagesForUid extends MethodProxy {
 
 
@@ -763,7 +757,9 @@ class MethodProxies {
             VLog.d(TAG, "getPackagesForUid callingPkgs " + Arrays.toString(callingPkgs)
                     + ", targetPkgs " + Arrays.toString(targetPkgs)
                     + ", selfPkgs " + Arrays.toString(selfPkgs)
-                    + ", uid " + uid + ", callingUid " + callingUid + ", Process.myUid " + Process.myUid());
+                    + ", uid " + uid
+                    + ", callingUid " + callingUid
+                    + ", Process.myUid " + Process.myUid());
 
             Set<String> pkgList = new ArraySet<>(2);
             if (callingPkgs != null && callingPkgs.length > 0) {
@@ -784,7 +780,6 @@ class MethodProxies {
         }
     }
 
-
     @SuppressWarnings("unchecked")
     static class QueryContentProviders extends MethodProxy {
 
@@ -803,7 +798,6 @@ class MethodProxies {
             }
             return infos;
         }
-
     }
 
     static class SetApplicationEnabledSetting extends MethodProxy {

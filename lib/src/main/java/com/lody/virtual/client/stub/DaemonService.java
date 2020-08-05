@@ -35,7 +35,6 @@ public class DaemonService extends Service {
 		super.onCreate();
         startService(new Intent(this, InnerService.class));
         startForeground(NOTIFY_ID, new Notification());
-
 	}
 
 	@Override
@@ -58,6 +57,4 @@ public class DaemonService extends Service {
 			return null;
 		}
 	}
-
-
 }

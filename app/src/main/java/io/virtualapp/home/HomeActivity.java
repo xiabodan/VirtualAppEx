@@ -3,10 +3,16 @@ package io.virtualapp.home;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PermissionInfo;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +23,8 @@ import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.View;
@@ -31,6 +39,8 @@ import com.lody.virtual.os.VUserManager;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import io.virtualapp.R;
@@ -61,8 +71,8 @@ import static android.support.v7.widget.helper.ItemTouchHelper.UP;
  * @author Lody
  */
 public class HomeActivity extends VActivity implements HomeContract.HomeView {
-
     private static final String TAG = HomeActivity.class.getSimpleName();
+    private static final int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 1000;
 
     private HomeContract.HomePresenter mPresenter;
     private TwoGearsView mLoadingView;
@@ -94,6 +104,58 @@ public class HomeActivity extends VActivity implements HomeContract.HomeView {
         bindViews();
         initLaunchpad();
         initMenu();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissionsForPackage(getPackageName());
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void requestPermissionsForPackage(final String packageName) {
+        final ApplicationInfo applicationInfo = getApplicationInfo();
+        if (applicationInfo.targetSdkVersion >= Build.VERSION_CODES.M) {
+            final PackageManager pm = getPackageManager();
+            PackageInfo packageInfo = null;
+            try {
+                packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS);
+            } catch (Exception e) {
+            }
+            final List<String> permissions = packageInfo != null && packageInfo.requestedPermissions != null ?
+                    Arrays.asList(packageInfo.requestedPermissions) : new ArrayList<String>();
+            final HashMap<String, PermissionInfo> needRequestPermissions = new HashMap<String, PermissionInfo>();
+            for (String permission : permissions) {
+                if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+                    continue;
+                }
+                PermissionInfo permInfo = null;
+                try {
+                    permInfo = pm.getPermissionInfo(permission, 0);
+                } catch (Exception e) {
+                }
+                if (permInfo != null && !TextUtils.equals(permInfo.packageName, packageName)
+                        && ((permInfo.protectionLevel & PermissionInfo.PROTECTION_MASK_BASE) > PermissionInfo.PROTECTION_NORMAL)) {
+                    needRequestPermissions.put(permission, permInfo);
+                }
+            }
+            if (needRequestPermissions.size() > 0) {
+                requestPermissions(needRequestPermissions.keySet().toArray(new String[needRequestPermissions.size()]),
+                        REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
+            }
+        }
+    }
+
+    @Override
+    @TargetApi(Build.VERSION_CODES.M)
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS: {
+                Log.d(TAG, String.format("onRequestPermissionsResult: permissions %s, results %s",
+                        Arrays.toString(permissions), Arrays.toString(grantResults)));
+                // TODO: 错误处理
+            } break;
+            default: {
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            }
+        }
         new HomePresenterImpl(this).start();
     }
 

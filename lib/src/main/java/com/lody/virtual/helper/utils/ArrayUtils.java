@@ -2,6 +2,8 @@ package com.lody.virtual.helper.utils;
 
 import com.lody.virtual.helper.compat.ObjectsCompat;
 
+import java.util.Arrays;
+
 /**
  * @author Lody
  *
@@ -135,5 +137,20 @@ public class ArrayUtils {
 		if ((offset | count) < 0 || offset > arrayLength || arrayLength - offset < count) {
 			throw new ArrayIndexOutOfBoundsException(offset);
 		}
+	}
+
+	public static <T> T[] concat(T[] first, T[] second) {
+		if (first == null && second == null) {
+			return null;
+		}
+		if (first == null) {
+			return Arrays.copyOf(second, second.length);
+		}
+		if (second == null) {
+			return Arrays.copyOf(first, first.length);
+		}
+		T[] result = Arrays.copyOf(first, first.length + second.length);
+		System.arraycopy(second, 0, result, first.length, second.length);
+		return result;
 	}
 }

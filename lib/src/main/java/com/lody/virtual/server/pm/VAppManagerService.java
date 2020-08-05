@@ -116,6 +116,7 @@ public class VAppManagerService implements IAppManager {
         chmodPackageDictionary(cacheFile);
         PackageCacheManager.put(pkg, ps);
         BroadcastSystem.get().startApp(pkg);
+        VLog.v(TAG, "loadPackageInnerLocked " + pkg);
         return true;
     }
 
